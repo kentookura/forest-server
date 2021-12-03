@@ -1,0 +1,1 @@
+FROM xtruder/nix-devcontainer

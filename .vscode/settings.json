@@ -1,0 +1,13 @@
+{
+    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "nix.enableLanguageServer": true,
+    "runItOn": {
+        "commands": [
+            {
+                "match": "shell.nix",
+                "isShellCommand": false,
+                "cmd": "nixEnvSelector.hitEnv"
+            }
+        ]
+    }
+}
