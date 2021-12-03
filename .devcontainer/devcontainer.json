@@ -10,6 +10,7 @@
   "updateRemoteUserUID": false,
 
   "onCreateCommand": "nix-shell --command 'echo done building nix dev environment'",
+  "waitFor": "onCreateCommand",
 
   "extensions": [
     // select nix environment
