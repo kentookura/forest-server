@@ -1,1 +1,1 @@
-FROM xtruder/nix-devcontainer
+FROM ghcr.io/xtruder/nix-devcontainer:v1
