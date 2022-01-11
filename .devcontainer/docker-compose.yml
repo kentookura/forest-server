@@ -12,19 +12,25 @@ services:
       PRELOAD_EXTENSIONS: "arrterian.nix-env-selector"
     volumes:
       - ..:/workspace:cached
+      - nix:/nix
     security_opt:
       - label:disable
     network_mode: "service:docker"
 
   docker:
-    image: xtruder/dind-rootless:latest
+    image: docker:dind-rootless
     environment:
       DOCKER_TLS_CERTDIR: ""
-      DOCKER_DRIVER: fuse-overlayfs
+      DOCKER_DRIVER: overlay2
     privileged: true
     volumes:
       - ..:/workspace:cached
-      - /var/lib/docker
+      - nix:/nix
+      - docker:/var/lib/docker
     security_opt:
       - label:disable
     network_mode: bridge
+    
+volumes:
+  nix:
+  docker:
