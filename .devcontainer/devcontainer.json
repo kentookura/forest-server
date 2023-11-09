@@ -21,6 +21,7 @@
 
     // run command on save (needed to reload nix environment)
     "fsevenm.run-it-on",
+    "rust-lang.rust-analyzer",
 
     // go language support
     "golang.go"

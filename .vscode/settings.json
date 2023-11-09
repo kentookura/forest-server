@@ -1,5 +1,5 @@
 {
-    "nixEnvSelector.nixFile": "${workspaceRoot}/shell.nix",
+    "nixEnvSelector.nixFile": "${workspaceRoot}/flake.nix",
     "nix.enableLanguageServer": true,
     "runItOn": {
         "commands": [

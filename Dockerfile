@@ -3,7 +3,7 @@ FROM nixpkgs/nix AS build
 WORKDIR /src
 
 # copy shell.nix and build environment first, so it will be cached
-ADD shell.nix /src
+ADD flake.nix /src
 RUN nix-shell --command "echo shell ready"
 
 # copy source and execute go build with nix-shell
