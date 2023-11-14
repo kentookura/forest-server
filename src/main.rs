@@ -1,30 +1,50 @@
 use actix_files::{Files, NamedFile};
-use actix_rt::Arbiter;
-use actix_web::{middleware::Logger, web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use actix_web::http::{header, StatusCode};
+use actix_web::{
+    get, middleware::Logger, post, web, App, HttpRequest, HttpResponse, HttpResponseBuilder,
+    HttpServer, Responder,
+};
 use actix_ws::{Message, Session};
-use async_priority_channel as priority;
+use clap::Parser;
 use futures::stream::{FuturesUnordered, StreamExt};
 use log::info;
-use std::ffi::OsStr;
+use miette::IntoDiagnostic;
+use serde::Deserialize;
+use std::convert::Infallible;
 use std::ffi::OsString;
+use std::fs::File;
+use std::io::{Error, Write};
+use std::str;
 use std::{
     sync::Arc,
     time::{Duration, Instant},
 };
 use tokio;
-//use tokio::process::Command;
+use tokio::process::Command;
 use tokio::sync::Mutex;
-use watchexec::command::Command;
+use watchexec::handler::SyncFnHandler;
+use watchexec::ErrorHook;
+//use watchexec::command::Command;
 use watchexec::{
     self,
     action::{Action, Outcome},
     config::{InitConfig, RuntimeConfig},
     error::ReconfigError,
-    event::{Event, Priority, Tag},
+    event::Event,
     Watchexec,
 };
 use watchexec_filterer_globset::GlobsetFilterer;
 use watchexec_signals::Signal;
+
+#[derive(Parser, Debug)]
+#[command(author, version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value_t = 8080)]
+    port: u16,
+
+    #[arg(short, long)]
+    trees: Option<String>,
+}
 
 #[derive(Clone)]
 struct Reload {
@@ -134,10 +154,6 @@ async fn ws(
     Ok(response)
 }
 
-async fn index() -> impl Responder {
-    NamedFile::open_async("./output/index.xml").await.unwrap()
-}
-
 pub async fn filt(filters: &[&str], ignores: &[&str], extensions: &[&str]) -> GlobsetFilterer {
     let origin = tokio::fs::canonicalize(".").await.unwrap();
     GlobsetFilterer::new(
@@ -156,36 +172,23 @@ pub async fn filt(filters: &[&str], ignores: &[&str], extensions: &[&str]) -> Gl
 async fn main() -> Result<(), anyhow::Error> {
     std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
+    let args = Args::parse();
 
     let reloader = Reload::new();
     let ch = reloader.clone();
-    let init = InitConfig::default();
+    let mut init = InitConfig::default();
+    init.on_error(SyncFnHandler::from(
+        |err: ErrorHook| -> std::result::Result<(), Infallible> {
+            eprintln!("Watchexec Runtime Error: {}", err.error);
+            Ok(())
+        },
+    ));
     let mut runtime = RuntimeConfig::default();
     runtime
         .pathset(["trees", "theme", "assets"])
         .filterer(Arc::new(
-            filt(&[], &[], &["tree", "js", "css", "xsl"]).await,
+            filt(&[], &["__latexindent*"], &["tree", "js", "css", "xsl"]).await,
         ))
-        .command(
-            Command::Exec {
-                prog: "forester".into(),
-                args: vec![
-                    "build".to_string(),
-                    "--dev".to_string(),
-                    "--root".to_string(),
-                    "index".to_string(),
-                    "trees".to_string(),
-                ],
-            }, //("forester")
-               //    .arg("build")
-               //    .arg("--dev")
-               //    .arg("--root")
-               //    .arg("index")
-               //    .arg("trees")
-               //    .status()
-               //    .await
-               //    .unwrap();
-        )
         .on_action(move |action: Action| {
             let ch = ch.clone();
             let evs = action.events.clone();
@@ -200,20 +203,29 @@ async fn main() -> Result<(), anyhow::Error> {
                 }
 
                 for event in evs.iter() {
-                    log::info!("detected changes");
-                    //Command::Exec {
-                    //  prog: "forester".into(),
-                    //};
-                    //("forester")
-                    //    .arg("build")
-                    //    .arg("--dev")
-                    //    .arg("--root")
-                    //    .arg("index")
-                    //    .arg("trees")
-                    //    .status()
-                    //    .await
-                    //    .unwrap();
-                    ch.send("reload".into()).await;
+                    log::info!("{:?}", event);
+                    match Command::new("forester")
+                        .args(&["build", "--dev", "--root", "index", "trees"])
+                        .output()
+                        .await
+                    {
+                        Ok(output) => {
+                            log::info!("{:?}", output);
+                            if output.status.success() {
+                                log::info!("{}", String::from_utf8(output.stdout).unwrap());
+                                log::info!("Reloading...");
+                                ch.send("reload".into()).await;
+                            } else {
+                                let msg = str::from_utf8(&output.stdout).unwrap();
+                                log::error!("\n{}", msg);
+                                ch.send(msg.into()).await;
+                            }
+                        }
+                        Err(_) => {
+                            log::error!("Error!")
+                        }
+                    }
+                    //.expect("Failed to run forester. Is the program installed?");
                 }
                 Ok::<(), ReconfigError>(())
             }
@@ -222,11 +234,12 @@ async fn main() -> Result<(), anyhow::Error> {
         App::new()
             .wrap(Logger::default())
             .app_data(web::Data::new(reloader.clone()))
-            .route("/", web::get().to(index))
+            .service(new_tree)
+            //.route("/", web::get().to(index))
             .route("/reload", web::get().to(ws))
-            .service(Files::new("/", "./output"))
+            .service(get_reload_file)
+            .service(Files::new("/", "./output").index_file("index.xml"))
     });
-    //.bind("127.0.0.1:8080");
 
     tokio::spawn(
         server
@@ -240,4 +253,94 @@ async fn main() -> Result<(), anyhow::Error> {
     //tokio::spawn(we.main()).await?.unwrap();
 
     Ok(())
+}
+
+#[derive(Deserialize)]
+struct New {
+    prefix: String,
+}
+
+#[post("/tree")]
+async fn new_tree(new: String) -> impl Responder {
+    match Command::new("forester")
+        .args(&[
+            "new",
+            "--dir",
+            "trees",
+            "--prefix",
+            new.as_ref(), //.appendChild(new.prefix.into()),
+        ])
+        .output()
+        .await
+    {
+        Ok(output) => HttpResponse::Created().body(output.stdout),
+        Err(x) => HttpResponse::InternalServerError().body(x.to_string()),
+    };
+    HttpResponse::Accepted()
+}
+
+#[get("/reload.js")]
+async fn get_reload_file() -> impl Responder {
+    let js = "
+var ws = null;
+var overlay = null;
+
+function addElement(msg) {
+  // create a new div element
+  const newDiv = document.createElement(\"div\");
+
+  // and give it some content
+  const newContent = document.createTextNode(msg);
+
+  // add the text node to the newly created div
+  newDiv.appendChild(newContent);
+
+  // add the newly created element and its content into the DOM
+  const currentDiv = document.getElementById(\"div1\");
+  document.body.insertBefore(newDiv, currentDiv);
+}
+
+
+
+function connect() {
+  const { location } = window;
+  const proto = location.protocol.startsWith(\"https\") ? \"wss\" : \"ws\";
+  const uri = `${proto}://${location.host}/reload`;
+  ws = new WebSocket(uri);
+
+  ws.onmessage = function (e) {
+    //console.log(\"message:\", e.data);
+    if (e.data == \"reload\") {
+      location.reload();
+    } else {
+      //console.log(e.data)
+      addElement(e.data)
+    }
+      
+  };
+
+  ws.onopen = function () {
+    console.log(\"live reload: connected to websocket\");
+  };
+
+  ws.onclose = function (e) {
+    console.log(
+      \"socket is closed. reconnect will be attempted in 1 second.\",
+      e.reason
+    );
+    ws = null;
+
+    setTimeout(function () {
+      connect();
+    }, 100);
+  };
+  ws.onerror = function (err) {
+    console.error(\"socket encountered error: \", err.message, \"closing socket\");
+  };
+}
+connect();"
+        .to_string();
+    HttpResponse::Ok()
+        .insert_header(header::ContentType(mime::APPLICATION_JAVASCRIPT))
+        .body(js)
 }

@@ -9,13 +9,17 @@ edition = "2018"
 [dependencies]
 actix-files = "0.6.2"
 actix-rt = "2.6"
-actix-web = "4.0.1"
+actix-web = {version = "4.0.1", features = ["macros"]}
 actix-ws = "0.2.0"
 anyhow = "1.0"
 async-priority-channel = "0.1.0"
+clap = { version = "4.4.8", features = ["derive"] }
 futures = "0.3"
 log = "0.4"
+miette = "5.10.0"
+mime = "0.3.17"
 pretty_env_logger = "0.4"
+serde = {version ="1.0.192", features = ["derive"]}
 tokio = { version = "1", features = ["sync"] }
 watchexec = "2.3.0"
 watchexec-filterer-globset = "1.2.0"
