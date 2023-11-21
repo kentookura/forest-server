@@ -1,6 +1,7 @@
 use anyhow::{bail, Result};
 use glob::glob;
-use std::path::PathBuf;
+use std::{path::PathBuf, process::Output};
+use tokio::process::Command;
 
 enum BuildError {
     DirError,
@@ -16,8 +17,7 @@ pub struct Forest {
 }
 
 fn validate_dirs(pattern: &str) -> Result<Vec<PathBuf>, BuildError> {
-    if glob(pattern) {
-        //.unwrap().any(|p| p.unwrap().exists()) {
+    if glob(pattern).unwrap().any(|p| p.unwrap().exists()) {
         Ok(glob(pattern).unwrap().map(|r| r.unwrap()).collect())
     } else if pattern == "trees" {
         Err(BuildError::DefaultNotPresent)
@@ -26,53 +26,7 @@ fn validate_dirs(pattern: &str) -> Result<Vec<PathBuf>, BuildError> {
     }
 }
 
-async fn build(trees: &String, root: Option<String>) -> Result<Output, Error> {
-    let cmd_args = format!(
-        "build --dev {} {}",
-        (root.inspect(|s| "--root ".push_str(root))),
-        trees
-    );
-    Command::new("forester")
-        .args(&["build", "--dev", "--root", "index", trees])
-        .output()
-        .await
-}
-
-impl Build {
-    pub fn run(&mut self) -> Result<Forest, BuildError> {
-        //let dirs = validate_dirs(self.trees.as_str());
-        match dirs {
-            Err(err) => {
-                match err {
-                    BuildError::DefaultNotPresent => {
-                        "Default directory './trees' not found.".into()
-                    }
-                    BuildError::NoGlobsMatched => format!("No directory matched by {}", self.trees),
-                };
-
-                //bail!(
-                //    "{} {}",
-                //    msg,
-                //    "Specify a path using --trees=<DIR>. You can use patterns such as 'forests/*'"
-                //);
-                //cmd.error(
-                //    clap::error::ErrorKind::DisplayHelp,
-                //    format!(
-                //    "{}\n{}",
-                //    msg,
-                //    "Specify a path using --trees=<DIR>. You can use patterns such as 'forests/*'"
-                //),
-                //)
-                //.exit();
-            }
-            Ok(_) => {
-                //runtime
-                //    .filterer(Arc::new(
-                //        filt(&[], &["__latexindent*"], &["tree", "js", "css", "xsl"]).await,
-                //    ))
-                //    .pathset(paths);
-            }
-        };
-        Ok(())
-    }
+pub async fn build(trees_dir: &String, root: String) -> Result<Output, std::io::Error> {
+    let cmd_args = format!("build --dev --root {} {}", root, trees_dir);
+    Command::new("forester").args(&[cmd_args]).output().await
 }

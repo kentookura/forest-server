@@ -5,26 +5,29 @@ use crossterm::{
     terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
     ExecutableCommand,
 };
+use log;
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, List, ListItem, Paragraph},
 };
-use std::str;
 use std::{fs, process::Output};
 use std::{
     io::{stdout, Error},
     path::PathBuf,
 };
+use std::{process::exit, str};
 use tokio::process::Command;
 
-use crate::cli::*;
+use crate::build::*;
 use crate::help_line::HelpItem;
 use crate::server::*;
+use crate::Args;
 
 pub struct App {
     port: u16,
     errors: Vec<String>,
-    trees: String,
+    tree_dir: String,
+    root: String,
     current_screen: CurrentScreen,
 }
 
@@ -34,35 +37,22 @@ enum CurrentScreen {
     CreatingNewTree,
 }
 
-//enum ForestError {
-//    TreeNotFound,
-//}
-
-async fn build(trees: &String) -> Result<Output, Error> {
-    Command::new("forester")
-        .args(&["build", "--dev", "--root", "index", trees])
-        .output()
-        .await
+enum ForestError {
+    TreeNotFound,
 }
 
 impl App {
-    pub fn new(args: Args) -> App {
+    pub fn new(port: u16, root: String, dir: String) -> App {
         App {
-            port: args.port,
+            port: port,
+            root: root,
             errors: vec![],
-            trees: args.trees,
+            tree_dir: dir,
             current_screen: CurrentScreen::Init,
         }
     }
 
     pub async fn run(&mut self) -> anyhow::Result<()> {
-        match build(&self.trees).await {
-            Ok(output) => {
-                let msg = str::from_utf8(&output.stdout).expect("failed to parse output");
-                println!("{}", msg);
-            }
-            Err(err) => self.errors = vec![err.to_string()],
-        }
         tokio::spawn(server(self.port));
 
         stdout().execute(EnterAlternateScreen)?;
@@ -70,7 +60,7 @@ impl App {
         let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
         terminal.clear()?;
 
-        match fs::metadata(format!("{}/index.tree", &self.trees)) {
+        match fs::metadata(format!("{}/index.tree", &self.tree_dir)) {
             Ok(_) => {}
             Err(err) => {}
         }
