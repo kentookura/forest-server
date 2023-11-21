@@ -1,38 +1,57 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.url = "nixpkgs";
     flake-utils.url = "github:numtide/flake-utils";
     rust-overlay.url = "github:oxalica/rust-overlay";
   };
-  outputs =
-    { self
-    , flake-utils
-    , rust-overlay
-    , nixpkgs
-    }@inputs:
-    # Don't forget to put the package name instead of `throw':
-    flake-utils.lib.eachDefaultSystem
-      (system:
+
+  outputs = { self, nixpkgs, rust-overlay, flake-utils }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs { inherit system overlays; };
+
+        libraries = with pkgs;[
+          bacon
+          webkitgtk
+          gtk4
+          cairo
+          gdk-pixbuf
+          libsoup
+          pkg-config
+          atk
+          webkitgtk
+          pango
+          #glibc.static
+          bacon
+          mprocs
+          dbus
+          openssl_3
+          librsvg
+        ];
+
+        packages = with pkgs; [
+        ];
       in
-      with pkgs;
       {
         packages.default = pkgs.rustPlatform.buildRustPackage {
-
           pname = "forest-server";
           version = "0.0.1";
-          src = ./.;
-          cargoLock = { lockFile = ./Cargo.lock; };
-          buildInputs = [ ];
+          src = ./tui;
+          cargoLock = { lockFile = ./tui/Cargo.lock; };
+          nativeBuildInputs = with pkgs;[ pkg-config ];
+          buildInputs = libraries;
         };
-        devShell =
-          pkgs.mkShell {
-            buildInputs = with pkgs; [
-              rust-analyzer-unwrapped
-              (rust-bin.beta.latest.default.override { extensions = [ "rust-src" "rust-analyzer-preview" ]; })
-            ];
-          };
+        devShell = pkgs.mkShell {
+          nativeBuildInputs = [ pkgs.pkg-config ];
+          buildInputs = with pkgs;  libraries ++ [
+            #packages.${system}.default
+            (rust-bin.beta.latest.default.override {
+              targets = [ "wasm32-unknown-unknown" ];
+              extensions = [ "rust-src" "rust-analyzer-preview" "rustfmt" ];
+            })
+
+          ];
+        };
       });
 }

@@ -1,5 +1,7 @@
 build/
+/frontend/node_modules/
 result
 target/
 dist/
 .direnv
+test/
