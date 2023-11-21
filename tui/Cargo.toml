@@ -8,8 +8,10 @@ edition = "2021"
 [dependencies]
 actix-cors = "0.6.4"
 actix-files = "0.6.2"
+actix-htmx = "0.3.0"
 actix-rt = "2.6"
 actix-web = { version = "4.0.1", features = ["macros"] }
+actix-web-static-files = "4.0.1"
 actix-ws = "0.2.0"
 anyhow = "1.0"
 async-priority-channel = "0.1.0"
@@ -27,6 +29,7 @@ mime = "0.3.17"
 pretty_env_logger = "0.4"
 ratatui = "0.24.0"
 serde = { version = "1.0.192", features = ["derive"] }
+static-files = "0.2.1"
 tokio = { version = "1", features = ["sync"] }
 watchexec = "2.3.0"
 watchexec-filterer-globset = "1.2.0"
@@ -34,3 +37,6 @@ watchexec-signals = "1.0.0"
 
 [[bin]]
 name = "forest-server"
+
+[build-dependencies]
+static-files = "0.2.1"

@@ -1,6 +1,8 @@
 use actix_cors::Cors;
 use actix_files::Files;
+use actix_htmx::HtmxMiddleware;
 use actix_web::{get, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
+use actix_web_static_files::ResourceFiles;
 use clearscreen;
 use std::convert::Infallible;
 use std::ffi::OsString;
@@ -22,6 +24,8 @@ use watchexec_filterer_globset::GlobsetFilterer;
 use watchexec_signals::Signal;
 
 mod websocket;
+
+include!(concat!(env!("OUT_DIR"), "/generated.rs"));
 
 pub async fn filt(filters: &[&str], ignores: &[&str], extensions: &[&str]) -> GlobsetFilterer {
     //let origin = std::fs::canonicalize(".").expect("failed to canonicalize path");
@@ -110,17 +114,20 @@ pub async fn server(port: u16) -> Result<(), Error> {
         let cors = Cors::default()
             .allowed_origin("tauri://localhost")
             .allowed_methods(vec!["GET", "POST"]);
+        let generated = generate();
 
         App::new()
+            .service(ResourceFiles::new("/", generated))
+            .wrap(HtmxMiddleware)
             .wrap(Logger::default())
             .wrap(cors)
             .app_data(web::Data::new(reloader.clone()))
             .service(new_tree)
-            .service(index)
             .route("/reload", web::get().to(websocket::ws))
-            //.service(get_reload_file)
-            //.service(reload) //.to_string();)
-            .service(Files::new("/", "./output")) //.index_file("index.html"))
+        //.service(get_reload_file)
+        //.service(reload) //.to_string();)
+        //.service(index)
+        //.service(Files::new("/", "./output")) //.index_file("index.html"))
     })
     .bind(("127.0.0.1", port))
     .expect("Failed to bind addr")
