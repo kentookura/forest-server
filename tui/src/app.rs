@@ -1,29 +1,13 @@
-use color_eyre::eyre::Result;
-use crossterm::{
-    event::{DisableMouseCapture, KeyEventKind},
-    execute,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
-use log;
-use ratatui::{
-    prelude::*,
-    widgets::{Block, Borders, List, ListItem, Paragraph},
-};
-use std::{fs, process::Output};
-use std::{
-    io::{stdout, Error},
-    path::PathBuf,
-};
-use std::{process::exit, str};
-use tokio::process::Command;
-
-use crate::build::*;
-use crate::help_line::HelpItem;
 use crate::server::*;
-use crate::Args;
+use crate::watch::*;
+use crate::Broadcaster;
+use actix_web::web;
+use log::info;
+use miette::IntoDiagnostic;
+use miette::Result;
+use std::sync::Arc;
 
-pub struct App {
+pub struct Application {
     port: u16,
     errors: Vec<String>,
     tree_dir: String,
@@ -41,9 +25,9 @@ enum ForestError {
     TreeNotFound,
 }
 
-impl App {
-    pub fn new(port: u16, root: String, dir: String) -> App {
-        App {
+impl Application {
+    pub fn new(port: u16, root: String, dir: String) -> Application {
+        Application {
             port: port,
             root: root,
             errors: vec![],
@@ -52,8 +36,36 @@ impl App {
         }
     }
 
-    pub async fn run(&mut self) -> anyhow::Result<()> {
-        tokio::spawn(server(self.port));
+    pub async fn run(&mut self) -> Result<()> {
+        info!("Hello");
+        let port = self.port.clone();
+        let root = self.root.clone();
+        let dir = self.tree_dir.clone();
+
+        let broadcaster = Broadcaster::create();
+
+        //let _ = tokio::spawn();
+        let _ = tokio::join!(
+            watch(dir, web::Data::from(Arc::clone(&broadcaster)))
+                .await
+                .main(),
+            //server(port).await
+        );
+        //let _ = tokio::task::spawn_blocking(move || {
+        //    watch(dir, web::Data::from(Arc::clone(&broadcaster)))
+        //})
+        //.await;
+        //.into_diagnostic()?;
+        //let _ = tokio::join!(
+        //    server(port).await,
+        //    watch(dir, web::Data::from(Arc::clone(&broadcaster)))
+        //        .await
+        //        .main()
+        //);
+
+        Ok(())
+
+        /*
 
         stdout().execute(EnterAlternateScreen)?;
         enable_raw_mode()?;
@@ -62,7 +74,7 @@ impl App {
 
         match fs::metadata(format!("{}/index.tree", &self.tree_dir)) {
             Ok(_) => {}
-            Err(err) => {}
+            Err(_err) => {}
         }
         let mut counter = 0;
 
@@ -126,43 +138,44 @@ impl App {
             LeaveAlternateScreen,
             DisableMouseCapture
         );
-
-        Ok(())
+            */
     }
 }
 
-//enum Event {
-//    Key(crossterm::event::KeyEvent),
-//}
-//
-//struct EventHandler {
-//    rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
-//}
+/*
+enum Event {
+    Key(crossterm::event::KeyEvent),
+}
 
-//impl EventHandler {
-//    fn new() -> Self {
-//        let tick_rate = std::time::Duration::from_millis(250);
-//        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
-//        tokio::spawn(async move {
-//            loop {
-//                if crossterm::event::poll(tick_rate).unwrap() {
-//                    match crossterm::event::read().unwrap() {
-//                        crossterm::event::Event::Key(e) => {
-//                            if e.kind == KeyEventKind::Press {
-//                                tx.send(Event::Key(e)).unwrap()
-//                            }
-//                        }
-//                        _ => unimplemented!(),
-//                    }
-//                }
-//            }
-//        });
-//        EventHandler { rx }
-//    }
-//    async fn next(&mut self) -> Result<Event> {
-//        self.rx
-//            .recv()
-//            .await
-//            .ok_or(color_eyre::eyre::eyre!("Unable to get event"))
-//    }
-//}
+struct EventHandler {
+    rx: tokio::sync::mpsc::UnboundedReceiver<Event>,
+}
+
+impl EventHandler {
+    fn new() -> Self {
+        let tick_rate = std::time::Duration::from_millis(250);
+        let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
+        tokio::spawn(async move {
+            loop {
+                if crossterm::event::poll(tick_rate).unwrap() {
+                    match crossterm::event::read().unwrap() {
+                        crossterm::event::Event::Key(e) => {
+                            if e.kind == KeyEventKind::Press {
+                                tx.send(Event::Key(e)).unwrap()
+                            }
+                        }
+                        _ => unimplemented!(),
+                    }
+                }
+            }
+        });
+        EventHandler { rx }
+    }
+    async fn next(&mut self) -> Result<Event> {
+        self.rx
+            .recv()
+            .await
+            .ok_or(color_eyre::eyre::eyre!("Unable to get event"))
+    }
+}
+*/

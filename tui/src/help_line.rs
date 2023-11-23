@@ -1,4 +1,4 @@
-use anyhow::Result;
+
 
 use ratatui::{prelude::*, widgets::*};
 
@@ -21,7 +21,7 @@ impl HelpItem {
     pub fn new(key: char, help: String) -> HelpItem {
         HelpItem { key, help }
     }
-    fn render(&self, area: Rect, buf: &mut Buffer) {
+    fn render(&self, _area: Rect, _buf: &mut Buffer) {
         let text = Line::from(vec![
             Span::styled(format!("{}", self.key), Style::new().red()),
             Span::raw(format!("to {}", self.help)),
@@ -30,8 +30,8 @@ impl HelpItem {
     }
 }
 
-pub fn help_line(area: Rect, buf: &mut Buffer) {
-    let layout = Layout::default().direction(Direction::Horizontal);
+pub fn help_line(_area: Rect, _buf: &mut Buffer) {
+    let _layout = Layout::default().direction(Direction::Horizontal);
     //let text = vec![Line::from(vec![Span::raw("Hit")])];
     //let helpItems = vec![HelpItem::new('q', "quit".to_string())];
     //for item in helpItems {

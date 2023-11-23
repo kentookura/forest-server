@@ -1,18 +1,16 @@
-use anyhow::{bail, Result};
 use clap::Parser;
-use std::process::exit;
+use log::info;
 
 mod app;
-mod build;
+mod forest;
 mod help_line;
 mod server;
+mod watch;
 
 pub use app::*;
-pub use build::*;
 pub use server::*;
 
-#[macro_use]
-extern crate cli_log;
+use crate::sse::Broadcaster;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
@@ -33,25 +31,25 @@ pub struct Args {
     pub verbose: bool,
 }
 
-#[tokio::main]
+#[actix_web::main(flavor = "multi_thread")]
 async fn main() -> anyhow::Result<()> {
-    init_cli_log!();
+    std::env::set_var("RUST_LOG", "debug");
     let args = Args::parse();
     let test = format!("{}/{}", args.dir, args.root);
+    log::info!("{:?}", test);
     (!std::path::Path::new(&test).exists()).then(|| {
         log::info!("{:?}", test);
-        log::info!("Should I create these dirs here?");
+        log::info!("Should I create these directories here?");
     });
     let root = "index"; //TODO: verify paths, ask if we should create them
     let dir = "trees".to_string(); //TODO: verify paths: c
-    if args.verbose {
-        std::env::set_var("RUST_LOG", "debug");
-    };
     pretty_env_logger::init();
 
-    App::new(args.port, format!("{}/{}.tree", dir, root), dir)
+    let mut rt = tokio::runtime::Runtime::new().unwrap();
+
+    Application::new(args.port, format!("{}/{}.tree", dir, root), dir)
         .run()
-        .await?;
+        .await;
 
     info!("bye");
     Ok(())
