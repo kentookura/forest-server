@@ -1,0 +1,33 @@
+body {
+  background-color: #f7f3e6;
+  opacity: 0.8;
+  background:
+    linear-gradient(135deg, #f7ac4555 25%, transparent 25%) -12px 0/ 24px 24px,
+    linear-gradient(225deg, #f7ac45 25%, transparent 25%) -12px 0/ 24px 24px,
+    linear-gradient(315deg, #f7ac4555 25%, transparent 25%) 0px 0/ 24px 24px,
+    linear-gradient(45deg, #f7ac45 25%, #f7f3e6 25%) 0px 0/ 24px 24px;
+  animation: gradient 35s ease infinite;
+  height: 100vh;
+}
+
+main {
+  background: aquamarine;
+}
+
+.centre {
+  margin: auto;
+  width: 50%;
+  padding: 10px;
+}
+
+.centre-text {
+  text-align: center;
+}
+
+.checked {
+  text-decoration: line-through;
+}
+
+.delete {
+  float: right;
+}

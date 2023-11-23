@@ -1,0 +1,16 @@
+<!-- templates/base.html -->
+<!doctype html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="/styles.css" />
+    <title>Index</title>
+    {% block head %}{% endblock %}
+  </head>
+  <body>
+    <div id="content">
+      {% block content %}
+      <p>Placeholder content</p>
+      {% endblock %}
+    </div>
+  </body>
+</html>
