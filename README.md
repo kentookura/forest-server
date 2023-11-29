@@ -2,8 +2,6 @@
 
 A live-updating development server for [forester](https://git.sr.ht/~jonsterling/ocaml-forester).
 
-The project is a server that integrates with the [forester] tool, designed for crafting connected mathematical notes.
-
 ## Installation:
 
 Requires `forester` to be available in `$PATH`.
