@@ -1,9 +1,8 @@
 use axum::response::sse;
 use core::fmt::Debug;
-use log::{debug, info};
+use log::{debug, error, info};
 use std::path::PathBuf;
 use std::sync::Arc;
-use tokio;
 use tokio::sync::broadcast::Sender;
 use watchexec::{
     command::Command, command::Program, error::RuntimeError, filter::Filterer, job::CommandState,
@@ -86,7 +85,9 @@ impl Watcher {
                                     debug!("{:?}", r);
                                     info!("Sent reload message");
                                 }
-                                Err(_) => {}
+                                Err(_) => {
+                                    error!("Error sending message!");
+                                }
                             };
                         }
                     });

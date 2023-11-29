@@ -1,13 +1,12 @@
 # Forest Server
 
-## Project Overview:
+A live-updating development server for [forester](https://git.sr.ht/~jonsterling/ocaml-forester).
 
-The project is a server that integrates with the [forester] tool, designed for crafting connected mathematical notes. It offers two binaries:
-
-- forest-server: A simple dev server for forester
-- forest-editor: An experimental desktop application.
+The project is a server that integrates with the [forester] tool, designed for crafting connected mathematical notes.
 
 ## Installation:
+
+Requires `forester` to be available in `$PATH`.
 
 To install using Nix:
 
@@ -35,17 +34,27 @@ To install using Nix:
 }
 ```
 
-TODO: provide builds on Github.
-
-If you build the server from source, make sure forester is available on your
-$PATH at runtime.
-
 ## Usage:
 
-If you use the [forester-base-theme](https://git.sr.ht/~jonsterling/forester-base-theme), then run `forest-server` in that directory. Configuring folder locations and server port are not supported yet.
+To make use of the live-reload feature, you will need to add the following
+javascript snippet to your `forest.xsl` template:
 
-I plan on adding assets to `forest-server` so it can host a forest without
-relying on an external folder.
+```html
+<script>
+  const evtSource = new EventSource("reload");
+  evtSource.onmessage = (event) => {
+    location.reload();
+  };
+</script>
+```
+
+Run `forest-server` in the directory containing `trees/` and `theme/`
+
+### Rough Edges
+
+It is now possible to specify a tree directory using the `--dir` flag, but
+the application still runs `forester` in the directory that `forest-server` is called in, so
+it panics when there is no `theme` directory present.
 
 ## Configuration:
 

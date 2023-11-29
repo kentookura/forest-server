@@ -1,7 +1,6 @@
 use clap::Parser;
 use log::info;
 mod app;
-mod help_line;
 mod server;
 mod watch;
 
@@ -36,7 +35,7 @@ async fn main() -> miette::Result<()> {
 
     pretty_env_logger::init();
 
-    Application::new(args.port, args.root, args.dir).run().await;
+    let _app = Application::new(args.port, args.dir).run().await;
 
     info!("bye");
     Ok(())
