@@ -1,11 +1,10 @@
+pub use app::*;
 use clap::Parser;
-use log::info;
+use log::{error, info};
+pub use server::*;
 mod app;
 mod server;
 mod watch;
-
-pub use app::*;
-pub use server::*;
 
 #[derive(Parser, Debug, Clone)]
 #[command(author, version, about, long_about = None)]
@@ -28,12 +27,18 @@ pub struct Args {
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
-    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_LOG", "info");
+    pretty_env_logger::init();
+
     let args = Args::parse();
 
-    (!std::path::Path::new(&args.dir).exists()).then(|| std::process::exit(1));
-
-    pretty_env_logger::init();
+    (!std::path::Path::new(&args.dir).exists()).then(|| {
+        error!(
+            "{} does not exist. Specify a directory containing your trees with --dir",
+            args.dir
+        );
+        std::process::exit(1)
+    });
 
     let _app = Application::new(args.port, args.dir).run().await;
 

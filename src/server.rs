@@ -39,8 +39,6 @@ pub async fn server(port: u16, rx: Receiver<Event>) {
 async fn sse_handler(State(state): State<AppState>) -> Sse<BroadcastStream<Event>> {
     let rx: Receiver<Event> = state.rx.lock().unwrap().resubscribe();
     let stream = BroadcastStream::new(rx);
-    info!("sse handler called");
-
     Sse::new(stream).keep_alive(
         axum::response::sse::KeepAlive::new()
             .interval(Duration::from_secs(1))
