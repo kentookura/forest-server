@@ -1,103 +1,110 @@
-use crate::Broadcaster;
-use actix_web::web;
-use clearscreen;
-use std::convert::Infallible;
-use std::ffi::OsString;
+use axum::response::sse;
+use core::fmt::Debug;
+use log::{debug, info};
 use std::path::PathBuf;
-use std::str;
 use std::sync::Arc;
 use tokio;
-use tokio::process::Command;
-use watchexec::handler::SyncFnHandler;
+use tokio::sync::broadcast::Sender;
 use watchexec::{
-    action::{Action, Outcome},
-    config::{InitConfig, RuntimeConfig},
-    error::{CriticalError, ReconfigError},
-    event::Event,
+    command::Command, command::Program, error::RuntimeError, filter::Filterer, job::CommandState,
+    Id, Watchexec,
 };
-use watchexec::{ErrorHook, Watchexec};
-use watchexec_filterer_globset::GlobsetFilterer;
+use watchexec_events::filekind::FileEventKind::Modify;
+use watchexec_events::filekind::ModifyKind::Data;
+use watchexec_events::Tag::FileEventKind;
+use watchexec_events::{Event, Priority, ProcessEnd};
 use watchexec_signals::Signal;
 
-pub async fn filt(filters: &[&str], ignores: &[&str], extensions: &[&str]) -> GlobsetFilterer {
-    // Don't know why this throws
-    //let origin = std::fs::canonicalize(".").expect("failed to canonicalize path");
-    let mut path = PathBuf::new();
-    path.push(".");
-    GlobsetFilterer::new(
-        path,
-        filters.iter().map(|s| ((*s).to_string(), None)),
-        ignores.iter().map(|s| ((*s).to_string(), None)),
-        vec![],
-        extensions.iter().map(OsString::from),
-    )
-    .await
-    .expect("making filterer")
+pub struct Watcher {
+    pub watchexec: Arc<Watchexec>,
 }
 
-//pub async fn watch(dir: String, broadcaster: web::Data<Broadcaster>) -> Result<(), CriticalError> {
-pub async fn watch(dir: String, broadcaster: web::Data<Broadcaster>) -> Arc<Watchexec> {
-    let mut init = InitConfig::default();
-    init.on_error(SyncFnHandler::from(
-        |err: ErrorHook| -> std::result::Result<(), Infallible> {
-            eprintln!("Watchexec Runtime Error: {}", err.error);
-            Ok(())
-        },
-    ));
+#[derive(Debug)]
+struct MyFilterer;
 
-    let mut runtime = RuntimeConfig::default();
+impl Filterer for MyFilterer {
+    fn check_event(&self, event: &Event, _: Priority) -> Result<bool, RuntimeError> {
+        let evt = event.clone();
+        Ok(evt
+            .tags
+            .into_iter()
+            .any(|tag| matches!(tag, FileEventKind(Modify(Data(_))))))
+    }
+}
 
-    runtime
-        .pathset([dir.clone(), "theme".to_string(), "assets".to_string()])
-        //.filterer(Arc::new(
-        //    filt(&[], &["__latexindent*"], &["tree", "js", "css", "xsl"]).await,
-        //))
-        .on_action(move |action: Action| {
-            //let ch = ch.clone();
-            let evs = action.events.clone();
-            let bcstr = broadcaster.clone();
-            let dir = dir.clone();
-            async move {
-                let sigs = action
-                    .events
-                    .iter()
-                    .flat_map(Event::signals)
-                    .collect::<Vec<_>>();
-                if sigs.iter().any(|sig| sig == &Signal::Interrupt) {
-                    action.outcome(Outcome::Exit);
-                }
+impl Watcher {
+    pub async fn run(dir: String, sender: Sender<sse::Event>) {
+        let build_id = Id::default();
 
-                for event in evs.iter() {
-                    log::info!("{:?}", event);
-                    match Command::new("forester")
-                        .args(&["build", "--dev", "--root", "index", &dir])
-                        .output()
-                        .await
-                    {
-                        Ok(output) => {
-                            log::info!("{:?}", output);
-                            if output.status.success() {
-                                //log::info!("{}", String::from_utf8(output.stdout).unwrap());
-                                clearscreen::clear().expect("failed to clear screen");
-                                log::info!("Reloading...");
-                                //ch.send("reload".into()).await;
-                                bcstr.broadcast("Build Succeeded;").await;
-                            } else {
-                                let msg = str::from_utf8(&output.stdout).unwrap();
-                                log::error!("\n{}", msg);
-                                //ch.send(msg.into()).await;
-                            }
-                        }
-                        Err(_) => {
-                            log::error!("Error!");
-                        }
+        let dir = dir.clone();
+        let sender = sender.clone();
+
+        let wx = Watchexec::new_async({
+            let dr = dir.clone();
+            let sender = sender.clone();
+
+            move |mut action| {
+                let dr = dr.clone();
+                let sender = sender.clone();
+
+                Box::new(async move {
+                    if action.signals().any(|sig| sig == Signal::Interrupt) {
+                        info!("[Quitting...]");
+                        action.quit();
+                        return action;
                     }
-                }
-                Ok::<(), ReconfigError>(())
+                    let build = action.get_or_create_job(build_id, || {
+                        Arc::new(Command {
+                            program: Program::Exec {
+                                prog: PathBuf::from("forester"),
+                                args: vec![
+                                    "build".to_string(),
+                                    "--dev".to_string(),
+                                    "--root".to_string(),
+                                    "index".to_string(),
+                                    dr.to_string(),
+                                ],
+                            },
+                            options: Default::default(),
+                        })
+                    });
+                    if action.paths().next().is_some()
+                        || action.events.iter().any(|event| event.tags.is_empty())
+                    {
+                        build.restart().await;
+                    }
+                    build.to_wait().await;
+                    build.run(move |context| {
+                        if let CommandState::Finished {
+                            status: ProcessEnd::Success,
+                            ..
+                        } = context.current
+                        {
+                            info!("{:?}", context.current);
+                            match sender.send(sse::Event::default().data("Hello")) {
+                                Ok(r) => {
+                                    debug!("{:?}", r);
+                                    info!("Sent reload message");
+                                }
+                                Err(_) => {}
+                            };
+                        }
+                    });
+                    action
+                })
             }
-        });
-    Watchexec::new(init, runtime.clone()).unwrap()
-    //we.reconfigure(runtime);
-    //we.main().await.unwrap().expect("Failed to start watchexec");
-    //Ok(())
+        })
+        .unwrap();
+
+        wx.config.pathset([dir]);
+        wx.config.filterer(MyFilterer {});
+
+        let main = wx.main();
+
+        let _ = main.await;
+
+        wx.send_event(Event::default(), Priority::Urgent)
+            .await
+            .unwrap();
+    }
 }

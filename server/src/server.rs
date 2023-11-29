@@ -1,77 +1,49 @@
-use crate::Broadcaster;
-use actix_cors::Cors;
-use actix_htmx::HtmxMiddleware;
-use actix_web::dev::Server;
-use actix_web::{get, middleware::Logger, post, web, App, HttpResponse, HttpServer, Responder};
-use actix_web_lab::extract::Path;
+use axum::{
+    extract::State,
+    response::sse::{Event, Sse},
+    routing::{get, get_service},
+    Router,
+};
 use std::sync::Arc;
-use tokio;
-use tokio::process::Command;
+use std::sync::Mutex;
+use std::time::Duration;
+use tokio::sync::broadcast::Receiver;
+use tokio_stream::wrappers::BroadcastStream;
+use tower_http::{services::ServeDir, trace::TraceLayer};
+use tracing::info;
 
-pub mod sse;
-pub mod websocket;
-use crate::forest::*;
-
-include!(concat!(env!("OUT_DIR"), "/generated.rs"));
-
-#[get("/events")]
-async fn event_stream(broadcaster: web::Data<Broadcaster>) -> impl Responder {
-    broadcaster.new_client().await
+#[derive(Clone)]
+struct AppState {
+    rx: Arc<Mutex<Receiver<Event>>>,
 }
 
-#[post("/broadcast/{msg}")]
-async fn broadcast_msg(
-    broadcaster: web::Data<Broadcaster>,
-    Path((msg,)): Path<(String,)>,
-) -> impl Responder {
-    broadcaster.broadcast(&msg).await;
-    HttpResponse::Ok().body("msg sent")
-}
+pub async fn server(port: u16, rx: Receiver<Event>) {
+    let rx = Arc::new(Mutex::new(rx));
+    let state = AppState { rx };
+    let app = Router::new()
+        .route("/reload", get(sse_handler))
+        .nest_service("/", get_service(ServeDir::new("output")))
+        .layer(TraceLayer::new_for_http())
+        .with_state(state);
 
-//#[actix_rt::main]
-pub async fn server(port: u16) -> Server {
-    if !std::path::Path::new("./output").exists() {
-        std::fs::create_dir("./output").expect("failed creating output directory");
-    }
-
-    let data = Broadcaster::create();
-    HttpServer::new(move || {
-        let cors = Cors::default()
-            .allowed_origin("tauri://localhost")
-            .allowed_methods(vec!["GET", "POST"]);
-
-        let generated = generate();
-
-        App::new()
-            .app_data(web::Data::from(Arc::clone(&data)))
-            .service(event_stream)
-            .service(broadcast_msg)
-            .wrap(HtmxMiddleware)
-            .service(web::resource("/").to(|| async { HomeTemplate {} }))
-            .wrap(Logger::default())
-            .wrap(cors)
-            .service(new_tree)
-    })
-    .bind(("127.0.0.1", port))
-    .expect("Failed to bind addr")
-    .run()
-}
-
-#[post("/tree")]
-async fn new_tree(new: String) -> impl Responder {
-    match Command::new("forester")
-        .args(&[
-            "new",
-            "--dir",
-            "trees",
-            "--prefix",
-            new.as_ref(), //.appendChild(new.prefix.into()),
-        ])
-        .output()
+    info!("Server started, listening on port {}", port);
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0:{}", port))
         .await
-    {
-        Ok(output) => HttpResponse::Created().body(output.stdout),
-        Err(x) => HttpResponse::InternalServerError().body(x.to_string()),
-    };
-    HttpResponse::Accepted()
+        .unwrap();
+
+    axum::serve(listener, app.into_make_service())
+        .await
+        .expect("failed to start server")
+}
+
+async fn sse_handler(State(state): State<AppState>) -> Sse<BroadcastStream<Event>> {
+    let rx: Receiver<Event> = state.rx.lock().unwrap().resubscribe();
+    let stream = BroadcastStream::new(rx);
+    info!("sse handler called");
+
+    Sse::new(stream).keep_alive(
+        axum::response::sse::KeepAlive::new()
+            .interval(Duration::from_secs(1))
+            .text("keep-alive-text"),
+    )
 }

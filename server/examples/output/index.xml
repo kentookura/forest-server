@@ -1,3 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="forest.xsl"?>
-<tree expanded="true" show-heading="true" show-metadata="true" toc="false" root="false"><frontmatter> <anchor>142</anchor>   <addr>index</addr> <source-path>/home/kento/forest/forest-server/tui/examples/trees/index.tree</source-path> <route>index.xml</route>    </frontmatter> <mainmatter><p>hello world asdf</p></mainmatter> <backmatter><contributions/> <context/> <related/> <backlinks/> <references/></backmatter></tree>

@@ -1,11 +1,9 @@
 use crate::server::*;
 use crate::watch::*;
-use crate::Broadcaster;
-use actix_web::web;
-use log::info;
-use miette::IntoDiagnostic;
+use axum::response::sse::Event;
 use miette::Result;
-use std::sync::Arc;
+use std::process::exit;
+use tokio::sync::broadcast;
 
 pub struct Application {
     port: u16,
@@ -17,12 +15,6 @@ pub struct Application {
 
 enum CurrentScreen {
     Init,
-    Watching,
-    CreatingNewTree,
-}
-
-enum ForestError {
-    TreeNotFound,
 }
 
 impl Application {
@@ -37,31 +29,22 @@ impl Application {
     }
 
     pub async fn run(&mut self) -> Result<()> {
-        info!("Hello");
         let port = self.port.clone();
-        let root = self.root.clone();
         let dir = self.tree_dir.clone();
+        let (tx, rx) = broadcast::channel::<Event>(100);
 
-        let broadcaster = Broadcaster::create();
+        let backend = async move {
+            server(port, rx).await;
+        };
 
-        //let _ = tokio::spawn();
-        let _ = tokio::join!(
-            watch(dir, web::Data::from(Arc::clone(&broadcaster)))
-                .await
-                .main(),
-            //server(port).await
-        );
-        //let _ = tokio::task::spawn_blocking(move || {
-        //    watch(dir, web::Data::from(Arc::clone(&broadcaster)))
-        //})
-        //.await;
-        //.into_diagnostic()?;
-        //let _ = tokio::join!(
-        //    server(port).await,
-        //    watch(dir, web::Data::from(Arc::clone(&broadcaster)))
-        //        .await
-        //        .main()
-        //);
+        let watcher = async {
+            Watcher::run(dir, tx).await;
+        };
+
+        tokio::join!(backend, watcher);
+        while let Ok(_) = tokio::signal::ctrl_c().await {
+            exit(0)
+        }
 
         Ok(())
 
@@ -71,12 +54,6 @@ impl Application {
         enable_raw_mode()?;
         let mut terminal = Terminal::new(CrosstermBackend::new(stdout()))?;
         terminal.clear()?;
-
-        match fs::metadata(format!("{}/index.tree", &self.tree_dir)) {
-            Ok(_) => {}
-            Err(_err) => {}
-        }
-        let mut counter = 0;
 
         // TODO main loop
         loop {
