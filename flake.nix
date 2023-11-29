@@ -12,17 +12,16 @@
         pkgs = import nixpkgs { inherit system overlays; };
 
         libraries = with pkgs;[
+          pkg-config
           bacon
           webkitgtk
           gtk4
           cairo
           gdk-pixbuf
           libsoup
-          pkg-config
           atk
           webkitgtk
           pango
-          #glibc.static
           bacon
           mprocs
           dbus
@@ -46,7 +45,7 @@
           nativeBuildInputs = [ pkgs.pkg-config ];
           buildInputs = with pkgs;  libraries ++ [
             #packages.${system}.default
-            (rust-bin.beta.latest.default.override {
+            (rust-bin.nightly.latest.default.override {
               targets = [ "wasm32-unknown-unknown" ];
               extensions = [ "rust-src" "rust-analyzer-preview" "rustfmt" ];
             })

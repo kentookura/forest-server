@@ -1,7 +1,7 @@
-build/
-/frontend/node_modules/
-result
+examples/
+theme/
+.direnv/
+frontend/
+gui/
 target/
-dist/
-.direnv
-test/
+result
