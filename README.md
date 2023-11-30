@@ -2,7 +2,9 @@
 
 A live-updating development server for [forester](https://git.sr.ht/~jonsterling/ocaml-forester).
 
-## Installation:
+## Installation and Setup
+
+`cargo install forest-server`
 
 Requires `forester` to be available in `$PATH`.
 
