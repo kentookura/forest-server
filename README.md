@@ -37,9 +37,11 @@ To install using Nix:
 ## Usage:
 
 To make use of the live-reload feature, you will need to add the following
-javascript snippet to your `forest.xsl` template:
+javascript snippet to the root template in `forest.xsl`:
 
 ```html
+...
+<script type="module" src="forester.js"></script>
 <script>
   const evtSource = new EventSource("reload");
   evtSource.onmessage = (event) => {
@@ -63,10 +65,6 @@ it panics when there is no `theme` directory present.
 ### TODO
 
 - Add a nice overlay to the UI like in vite.
-
-## Configuration:
-
-Configuration options will be available through command-line flags. Detailed configuration information will be added soon.
 
 ## Contributing
 
