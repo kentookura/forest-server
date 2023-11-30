@@ -41,7 +41,11 @@ javascript snippet to your `forest.xsl` template:
 <script>
   const evtSource = new EventSource("reload");
   evtSource.onmessage = (event) => {
-    location.reload();
+    if (event.data == "reload") {
+      location.reload();
+    } else {
+      console.log(event.data);
+    }
   };
 </script>
 ```
@@ -53,6 +57,10 @@ Run `forest-server` in the directory containing `trees/` and `theme/`
 It is now possible to specify a tree directory using the `--dir` flag, but
 the application still runs `forester` in the directory that `forest-server` is called in, so
 it panics when there is no `theme` directory present.
+
+### TODO
+
+- Add a nice overlay to the UI like in vite.
 
 ## Configuration:
 
