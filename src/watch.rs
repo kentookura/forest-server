@@ -40,16 +40,14 @@ impl Watcher {
             let dr = dir.clone();
             let sender = sender.clone();
 
-            move |mut action| {
+            move |action| {
                 let dr = dr.clone();
                 let sender = sender.clone();
 
                 Box::new(async move {
                     if action.signals().any(|sig| sig == Signal::Interrupt) {
-                        info!("Quitting Wachexec");
-                        info!("[BUG! Press CTRL-C again to exit]");
-                        action.quit();
-                        return action;
+                        info!("Goodbye!");
+                        std::process::exit(0);
                     }
 
                     let forester = Arc::new(Command {
@@ -83,7 +81,7 @@ impl Watcher {
                                 }
                             };
                         } else {
-                            error!("{}", sout);
+                            println!("\n{}", sout);
                             match sender.send(sse::Event::default().data(sout)) {
                                 Ok(r) => {
                                     debug!("{:?}", r);
@@ -114,6 +112,5 @@ impl Watcher {
 
         let _result = main.await;
         Ok(())
-        //.unwrap();
     }
 }
