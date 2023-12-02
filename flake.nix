@@ -14,19 +14,8 @@
         libraries = with pkgs;[
           pkg-config
           bacon
-          webkitgtk
-          gtk4
-          cairo
           gdk-pixbuf
-          libsoup
-          atk
-          webkitgtk
-          pango
-          bacon
-          mprocs
-          dbus
           openssl_3
-          librsvg
         ];
 
         packages = with pkgs; [
