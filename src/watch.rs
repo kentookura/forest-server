@@ -32,34 +32,35 @@ impl Filterer for MyFilterer {
 }
 
 impl Watcher {
-    pub async fn run(dir: String, sender: Sender<sse::Event>) -> Result<()> {
-        let dir = dir.clone();
+    pub async fn run(dirs: Vec<String>, sender: Sender<sse::Event>) -> Result<()> {
         let sender = sender.clone();
 
         let wx = Watchexec::new_async({
-            let dr = dir.clone();
+            let dirs = dirs.clone();
             let sender = sender.clone();
 
             move |action| {
-                let dr = dr.clone();
+                let dirs = dirs.clone();
                 let sender = sender.clone();
 
                 Box::new(async move {
+                    let mut dirs = dirs.clone();
                     if action.signals().any(|sig| sig == Signal::Interrupt) {
                         info!("Goodbye!");
                         std::process::exit(0);
                     }
 
+                    let mut args = vec![
+                        "build".to_string(),
+                        "--dev".to_string(),
+                        "--root".to_string(),
+                        "index".to_string(),
+                    ];
+                    args.append(&mut dirs);
                     let forester = Arc::new(Command {
                         program: Program::Exec {
                             prog: PathBuf::from("forester"),
-                            args: vec![
-                                "build".to_string(),
-                                "--dev".to_string(),
-                                "--root".to_string(),
-                                "index".to_string(),
-                                dr.to_string(),
-                            ],
+                            args,
                         },
                         options: Default::default(),
                     });
@@ -68,7 +69,8 @@ impl Watcher {
                         || action.events.iter().any(|event| event.tags.is_empty())
                     {
                         let output = forester.to_spawnable().output().await.unwrap();
-                        let sout = String::from_utf8(output.stdout).expect("Output not UTF8");
+                        let stdout = String::from_utf8(output.stdout)
+                            .expect("forester's output text is not UTF8");
                         if output.status.success() {
                             info!("Build Succeeded!");
                             match sender.send(sse::Event::default().data("reload")) {
@@ -81,8 +83,10 @@ impl Watcher {
                                 }
                             };
                         } else {
-                            println!("\n{}", sout);
-                            match sender.send(sse::Event::default().data(sout)) {
+                            let stderr = String::from_utf8(output.stderr)
+                                .expect("forester's stderr is not UTF8");
+                            println!("\n{}\nstderr: \n{}", stdout, stderr);
+                            match sender.send(sse::Event::default().data(stdout)) {
                                 Ok(r) => {
                                     debug!("{:?}", r);
                                 }
@@ -98,7 +102,7 @@ impl Watcher {
         })
         .unwrap();
 
-        wx.config.pathset([dir]);
+        wx.config.pathset(dirs);
         wx.config.filterer(MyFilterer {});
 
         let main = wx.main();

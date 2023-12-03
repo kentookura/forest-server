@@ -15,7 +15,7 @@ pub struct Args {
 
     /// Directory containig trees
     #[arg(short, long, default_value = "./trees", value_name = "DIR")]
-    pub dir: String,
+    pub dirs: String,
 
     /// Directory containig trees
     #[arg(short, long, default_value = "index", value_name = "ROOT-TREE")]
@@ -32,15 +32,17 @@ async fn main() -> miette::Result<()> {
 
     let args = Args::parse();
 
-    (!std::path::Path::new(&args.dir).exists()).then(|| {
-        error!(
-            "{} does not exist. Specify a directory containing your trees with --dir",
-            args.dir
-        );
-        std::process::exit(1)
-    });
+    let dirs: Vec<String> = args.dirs.split(" ").map(str::to_string).collect();
+    for dir in &dirs {
+        if !std::path::Path::new(&dir).exists() {
+            error!("{} does not exist.", dir);
+            std::process::exit(1)
+        } else {
+            info!("{} is a good directory.", dir);
+        }
+    }
 
-    let _app = Application::new(args.port, args.dir).run().await;
+    let _app = Application::new(args.port, dirs).run().await;
 
     info!("bye");
     Ok(())
