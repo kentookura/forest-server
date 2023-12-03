@@ -37,8 +37,6 @@ async fn main() -> miette::Result<()> {
         if !std::path::Path::new(&dir).exists() {
             error!("{} does not exist.", dir);
             std::process::exit(1)
-        } else {
-            info!("{} is a good directory.", dir);
         }
     }
 
