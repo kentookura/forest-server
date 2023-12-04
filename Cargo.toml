@@ -29,4 +29,4 @@ watchexec-signals = "2.0.0"
 
 [[bin]]
 name = "forest"
-
+path = "src/main.rs"
