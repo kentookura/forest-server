@@ -39,7 +39,8 @@ async fn main() -> miette::Result<()> {
             let opts = sub_matches
                 .get_one::<String>("opts")
                 .map(|s| s.as_str())
-                .unwrap();
+                .unwrap()
+                .expect("make sure to pass arguments to forester like so: forest watch -- \"build --dev --index root trees/\"" )
 
             let Some(port) = sub_matches.get_one::<u16>("port") else {
                 todo!()
