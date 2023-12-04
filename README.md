@@ -2,6 +2,31 @@
 
 A live-updating development server for [forester](https://git.sr.ht/~jonsterling/ocaml-forester).
 
+## Usage
+
+To make use of the live-reload feature, you will need to add the following
+javascript snippet to the root template in `forest.xsl`:
+
+```html
+...
+<script type="module" src="forester.js"></script>
+<script>
+  const evtSource = new EventSource("reload");
+  evtSource.onmessage = (event) => {
+    if (event.data == "reload") {
+      location.reload();
+    } else {
+      console.log(event.data);
+    }
+  };
+</script>
+```
+
+Run `forest watch -- "$args"`, where `$args` are the arguments you want to pass
+to `forester`. For example:
+
+`forest wach -- "build --dev --root index trees/"`
+
 ## Installation and Setup
 
 `cargo install forest-server`
@@ -33,34 +58,6 @@ To install using Nix:
     };
 }
 ```
-
-## Usage:
-
-To make use of the live-reload feature, you will need to add the following
-javascript snippet to the root template in `forest.xsl`:
-
-```html
-...
-<script type="module" src="forester.js"></script>
-<script>
-  const evtSource = new EventSource("reload");
-  evtSource.onmessage = (event) => {
-    if (event.data == "reload") {
-      location.reload();
-    } else {
-      console.log(event.data);
-    }
-  };
-</script>
-```
-
-Run `forest-server` in the directory containing `trees/` and `theme/`
-
-### Rough Edges
-
-It is now possible to specify a tree directory using the `--dir` flag, but
-the application still runs `forester` in the directory that `forest-server` is called in, so
-it panics when there is no `theme` directory present.
 
 ### TODO
 
