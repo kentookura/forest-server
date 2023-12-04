@@ -1,28 +1,31 @@
 pub use app::*;
-use clap::Parser;
-use log::{error, info};
+use clap::{arg, value_parser, Command};
 pub use server::*;
 mod app;
 mod server;
 mod watch;
 
-#[derive(Parser, Debug, Clone)]
-#[command(author, version, about, long_about = None)]
-pub struct Args {
-    /// The port on which to host the generated files
-    #[arg(short, long, default_value_t = 8080)]
-    pub port: u16,
-
-    /// Directory containig trees
-    #[arg(short, long, default_value = "./trees", value_name = "DIR")]
-    pub dir: String,
-
-    /// Directory containig trees
-    #[arg(short, long, default_value = "index", value_name = "ROOT-TREE")]
-    pub root: String,
-
-    #[arg(short, long, default_value = "false")]
-    pub verbose: bool,
+fn cli() -> Command {
+    Command::new("forest")
+        .subcommand_required(true)
+        .arg_required_else_help(true)
+        .subcommand(
+            Command::new("watch")
+                .arg(
+                    arg!(port: [PORT])
+                        .value_parser(value_parser!(u16))
+                        .default_value("8080"),
+                )
+                .arg(arg!(opts: [OPTS]).last(true)),
+        )
+        .subcommand(
+            Command::new("serve").arg(
+                arg!(port: [PORT])
+                    .value_parser(value_parser!(u16))
+                    .default_value("8080"),
+            ),
+        )
+        .subcommand(Command::new("publish"))
 }
 
 #[tokio::main]
@@ -30,18 +33,32 @@ async fn main() -> miette::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
 
-    let args = Args::parse();
+    let matches = cli().get_matches();
+    match matches.subcommand() {
+        Some(("watch", sub_matches)) => {
+            let opts = sub_matches
+                .get_one::<String>("opts")
+                .map(|s| s.as_str())
+                .unwrap();
 
-    (!std::path::Path::new(&args.dir).exists()).then(|| {
-        error!(
-            "{} does not exist. Specify a directory containing your trees with --dir",
-            args.dir
-        );
-        std::process::exit(1)
-    });
+            let Some(port) = sub_matches.get_one::<u16>("port") else {
+                todo!()
+            };
 
-    let _app = Application::new(args.port, args.dir).run().await;
+            let _app = Application::run(*port, opts).await;
+        }
+        Some(("serve", sub_matches)) => {
+            let Some(port) = sub_matches.get_one::<u16>("port") else {
+                todo!()
+            };
 
-    info!("bye");
+            let _server = server(*port, None).await;
+        }
+        Some(("publish", _)) => {
+            println!("Not implemented yet.");
+            println!("Coming soon to a forest near you!")
+        }
+        _ => unreachable!(),
+    }
     Ok(())
 }

@@ -13,30 +13,38 @@ use tower_http::{services::ServeDir, trace::TraceLayer};
 use tracing::info;
 
 #[derive(Clone)]
-struct AppState {
+pub struct ServerState {
     rx: Arc<Mutex<Receiver<Event>>>,
 }
 
-pub async fn server(port: u16, rx: Receiver<Event>) {
-    let rx = Arc::new(Mutex::new(rx));
-    let state = AppState { rx };
-    let app = Router::new()
-        .route("/reload", get(sse_handler))
-        .nest_service("/", get_service(ServeDir::new("output")))
-        .layer(TraceLayer::new_for_http())
-        .with_state(state);
-
+pub async fn server(port: u16, rx: Option<Receiver<Event>>) {
     info!("Server started, listening on port {}", port);
+
     let listener = tokio::net::TcpListener::bind(format!("0.0.0:{}", port))
         .await
         .unwrap();
 
-    axum::serve(listener, app.into_make_service())
-        .await
-        .expect("failed to start server")
+    if let Some(rx) = rx {
+        let rx = Arc::new(Mutex::new(rx));
+        let state = ServerState { rx };
+        let router = Router::new()
+            .route("/reload", get(sse_handler))
+            .nest_service("/", get_service(ServeDir::new("output")))
+            .layer(TraceLayer::new_for_http())
+            .with_state(state);
+
+        axum::serve(listener, router.into_make_service())
+            .await
+            .expect("failed to start server")
+    } else {
+        let router = Router::new().nest_service("/", get_service(ServeDir::new("output")));
+        axum::serve(listener, router.into_make_service())
+            .await
+            .expect("failed to start server")
+    }
 }
 
-async fn sse_handler(State(state): State<AppState>) -> Sse<BroadcastStream<Event>> {
+async fn sse_handler(State(state): State<ServerState>) -> Sse<BroadcastStream<Event>> {
     let rx: Receiver<Event> = state.rx.lock().unwrap().resubscribe();
     let stream = BroadcastStream::new(rx);
     Sse::new(stream).keep_alive(

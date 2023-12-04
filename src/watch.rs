@@ -8,9 +8,7 @@ use tokio::sync::broadcast::Sender;
 use watchexec::{
     command::Command, command::Program, error::RuntimeError, filter::Filterer, Watchexec,
 };
-use watchexec_events::filekind::FileEventKind::Modify;
-use watchexec_events::filekind::ModifyKind::Data;
-use watchexec_events::Tag::FileEventKind;
+use watchexec_events::Tag::Path;
 use watchexec_events::{Event, Priority};
 use watchexec_signals::Signal;
 
@@ -24,42 +22,43 @@ struct MyFilterer;
 impl Filterer for MyFilterer {
     fn check_event(&self, event: &Event, _: Priority) -> Result<bool, RuntimeError> {
         let evt = event.clone();
-        Ok(evt
-            .tags
-            .into_iter()
-            .any(|tag| matches!(tag, FileEventKind(Modify(Data(_))))))
+        Ok(evt.tags.clone().into_iter().any(|tag| {
+            if let Path {
+                ref path,
+                file_type: _,
+            } = tag
+            {
+                path.extension().is_some_and(|ext| ext == "tree")
+            } else {
+                false
+            }
+        }))
     }
 }
 
 impl Watcher {
-    pub async fn run(dir: String, sender: Sender<sse::Event>) -> Result<()> {
-        let dir = dir.clone();
+    pub async fn run(sender: Sender<sse::Event>, forester_args: &str) -> Result<()> {
+        let args = shlex::split(forester_args).expect("failed to parse arguments for forester");
         let sender = sender.clone();
 
         let wx = Watchexec::new_async({
-            let dr = dir.clone();
             let sender = sender.clone();
 
             move |action| {
-                let dr = dr.clone();
                 let sender = sender.clone();
+                let args = args.clone();
 
                 Box::new(async move {
                     if action.signals().any(|sig| sig == Signal::Interrupt) {
                         info!("Goodbye!");
                         std::process::exit(0);
                     }
+                    let args = args.clone();
 
                     let forester = Arc::new(Command {
                         program: Program::Exec {
                             prog: PathBuf::from("forester"),
-                            args: vec![
-                                "build".to_string(),
-                                "--dev".to_string(),
-                                "--root".to_string(),
-                                "index".to_string(),
-                                dr.to_string(),
-                            ],
+                            args,
                         },
                         options: Default::default(),
                     });
@@ -98,7 +97,7 @@ impl Watcher {
         })
         .unwrap();
 
-        wx.config.pathset([dir]);
+        wx.config.pathset(["."]);
         wx.config.filterer(MyFilterer {});
 
         let main = wx.main();

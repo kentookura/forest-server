@@ -5,29 +5,20 @@ use miette::Result;
 use std::process::exit;
 use tokio::sync::broadcast;
 
+#[derive(Clone)]
 pub struct Application {
-    port: u16,
-    tree_dir: String,
+    pub port: u16,
 }
 
 impl Application {
-    pub fn new(port: u16, dir: String) -> Application {
-        Application {
-            port,
-            tree_dir: dir,
-        }
-    }
-
-    pub async fn run(&mut self) -> Result<()> {
-        let dir = self.tree_dir.clone();
+    pub async fn run(port: u16, forester_args: &str) -> Result<()> {
         let (tx, rx) = broadcast::channel::<Event>(100);
-
-        let backend = async move {
-            server(self.port, rx).await;
+        let watcher = async {
+            let _ = Watcher::run(tx, forester_args).await;
         };
 
-        let watcher = async {
-            let _ = Watcher::run(dir, tx).await;
+        let backend = async move {
+            server(port, Some(rx)).await;
         };
 
         tokio::select! {
