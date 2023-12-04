@@ -24,7 +24,7 @@
       {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = "forest-server";
-          version = "0.2.0";
+          version = "0.2.1";
           src = ./.;
           cargoLock = { lockFile = ./Cargo.lock; };
           nativeBuildInputs = with pkgs;[ pkg-config ];
