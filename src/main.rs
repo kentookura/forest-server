@@ -76,7 +76,7 @@ async fn main() -> miette::Result<()> {
                 options: Default::default(),
             });
 
-            let output = forester.to_spawnable().output().await.inspect_err(|e| {
+            let output = forester.to_spawnable().output().await.map_err(|e| {
                 error!("Failed to call forester: {}", e);
                 info!("Attempting to serve directory \"output\" anyway.");
             });
