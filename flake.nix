@@ -26,7 +26,10 @@
           pname = "forest-server";
           version = "0.2.1";
           src = ./.;
-          cargoLock = { lockFile = ./Cargo.lock; };
+          cargoLock = {
+            lockFile = ./Cargo.lock;
+            allowBuiltinFetchGit = true;
+          };
           nativeBuildInputs = with pkgs;[ pkg-config ];
           buildInputs = libraries;
         };

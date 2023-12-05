@@ -8,9 +8,9 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = {version = "0.7.1", features = ["tokio", "macros"]}
+axum = {version = "0.7.2", features = ["tokio", "macros"]}
 axum-extra = {version = "0.9.0", features = ["typed-header"]}
-clap = { version = "4.4.8", features = ["derive", "cargo"] }
+clap = { version = "4.4.11", features = ["derive", "cargo"] }
 cli-log = "2.0.0"
 futures = "0.3"
 futures-util = "0.3.29"
@@ -23,8 +23,7 @@ tokio = { version = "1", features = ["sync", "rt-multi-thread"] }
 tokio-stream = {version = "0.1.14", features = ["sync"]}
 tower-http = {version ="0.5.0", features = ["fs", "trace"]}
 tracing = "0.1.40"
-watchexec = "3.0.0"
-watchexec-filterer-globset = {git = "https://github.com/watchexec/watchexec"}
+watchexec = "3.0.1"
 watchexec-events = "2.0.1"
 watchexec-signals = "2.0.0"
 
