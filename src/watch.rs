@@ -43,9 +43,8 @@ fn proper_pathset() -> io::Result<Vec<String>> {
     let r = fs::read_dir(".")?
         .map(|res| res.map(|e| e.file_name().to_string_lossy().to_string()))
         .collect::<Result<Vec<_>, io::Error>>();
-    match r {
-        Ok(v) => Ok(v
-            .into_iter()
+    r.map(|v| {
+        v.into_iter()
             .filter(|path| {
                 path != ".git"
                     && path != ".hg"
@@ -54,9 +53,8 @@ fn proper_pathset() -> io::Result<Vec<String>> {
                     && path != "assets"
                     && path != "theme"
             })
-            .collect()),
-        Err(e) => Err(e),
-    }
+            .collect()
+    })
 }
 
 impl Watcher {
