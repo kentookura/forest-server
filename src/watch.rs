@@ -123,7 +123,6 @@ impl Watcher {
         .into_diagnostic()?;
 
         let set = proper_pathset().expect("cannot open current directory");
-        println!("{:?}", set);
         wx.config.pathset(set);
         wx.config.filterer(MyFilterer {});
 
