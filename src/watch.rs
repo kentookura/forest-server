@@ -1,8 +1,9 @@
 use axum::response::sse;
 use core::fmt::Debug;
 use log::{debug, error, info};
-use miette::Result;
+use miette::{IntoDiagnostic, Result};
 use std::path::PathBuf;
+use std::process::exit;
 use std::sync::Arc;
 use tokio::sync::broadcast::Sender;
 use watchexec::{
@@ -66,7 +67,11 @@ impl Watcher {
                     if action.paths().next().is_some()
                         || action.events.iter().any(|event| event.tags.is_empty())
                     {
-                        let output = forester.to_spawnable().output().await.unwrap();
+                        let output = forester.to_spawnable().output().await.unwrap_or_else(|e| {
+                            error!("Command forester should be installed");
+                            error!("{}", e);
+                            exit(1)
+                        });
                         let sout = String::from_utf8(output.stdout).expect("Output not UTF8");
                         if output.status.success() {
                             info!("Build Succeeded!");
@@ -95,7 +100,7 @@ impl Watcher {
                 })
             }
         })
-        .unwrap();
+        .into_diagnostic()?;
 
         wx.config.pathset(["."]);
         wx.config.filterer(MyFilterer {});
