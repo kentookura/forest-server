@@ -2,6 +2,8 @@ use axum::response::sse;
 use core::fmt::Debug;
 use log::{debug, error, info};
 use miette::{IntoDiagnostic, Result};
+use std::fs;
+use std::io;
 use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
@@ -34,6 +36,26 @@ impl Filterer for MyFilterer {
                 false
             }
         }))
+    }
+}
+
+fn proper_pathset() -> io::Result<Vec<String>> {
+    let r = fs::read_dir(".")?
+        .map(|res| res.map(|e| e.file_name().to_string_lossy().to_string()))
+        .collect::<Result<Vec<_>, io::Error>>();
+    match r {
+        Ok(v) => Ok(v
+            .into_iter()
+            .filter(|path| {
+                path != ".git"
+                    && path != ".hg"
+                    && path != "node_modules"
+                    && path != "output"
+                    && path != "assets"
+                    && path != "theme"
+            })
+            .collect()),
+        Err(e) => Err(e),
     }
 }
 
@@ -102,7 +124,9 @@ impl Watcher {
         })
         .into_diagnostic()?;
 
-        wx.config.pathset(["."]);
+        let set = proper_pathset().expect("cannot open current directory");
+        println!("{:?}", set);
+        wx.config.pathset(set);
         wx.config.filterer(MyFilterer {});
 
         let main = wx.main();
