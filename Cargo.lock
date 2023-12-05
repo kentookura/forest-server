@@ -63,30 +63,30 @@ checksum = "7079075b41f533b8c61d2a4d073c4676e1f8b249ff94a393b0595db304e0dd87"
 
 [[package]]
 name = "anstyle-parse"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "317b9a89c1868f5ea6ff1d9539a69f45dffc21ce321ac1fd1160dfa48c8e2140"
+checksum = "c75ac65da39e5fe5ab759307499ddad880d724eed2f6ce5b5e8a26f4f387928c"
 dependencies = [
  "utf8parse",
 ]
 
 [[package]]
 name = "anstyle-query"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ca11d4be1bab0c8bc8734a9aa7bf4ee8316d462a08c6ac5052f888fef5b494b"
+checksum = "a3a318f1f38d2418400f8209655bfd825785afd25aa30bb7ba6cc792e4596748"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
 name = "anstyle-wincon"
-version = "3.0.1"
+version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f0699d10d2f4d628a98ee7b57b289abbc98ff3bad977cb3152709d4bf2330628"
+checksum = "1cd54b81ec8d6180e24654d0b371ad22fc3dd083b6ff8ba325b72e00c87660a7"
 dependencies = [
  "anstyle",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -145,12 +145,12 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "axum"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "810a80b128d70e6ed2bdf3fe8ed72c0ae56f5f5948d01c2753282dd92a84fce8"
+checksum = "202651474fe73c62d9e0a56c6133f7a0ff1dc1c8cf7a5b03381af2a26553ac9d"
 dependencies = [
  "async-trait",
- "axum-core 0.4.0",
+ "axum-core 0.4.1",
  "axum-macros",
  "bytes",
  "futures-util",
@@ -196,9 +196,9 @@ dependencies = [
 
 [[package]]
 name = "axum-core"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de0ddc355eab88f4955090a823715df47acf0b7660aab7a69ad5ce6301ee3b73"
+checksum = "77cb22c689c44d4c07b0ab44ebc25d69d8ae601a2f28fb8d672d344178fa17aa"
 dependencies = [
  "async-trait",
  "bytes",
@@ -221,7 +221,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "523ae92256049a3b02d3bb4df80152386cd97ddba0c8c5077619bdc8c4b1859b"
 dependencies = [
  "axum",
- "axum-core 0.4.0",
+ "axum-core 0.4.1",
  "bytes",
  "futures-util",
  "headers",
@@ -353,9 +353,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.10"
+version = "4.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "41fffed7514f420abec6d183b1d3acfd9099c79c3a10a06ade4f8203f1411272"
+checksum = "bfaff671f6b22ca62406885ece523383b9b64022e341e53e009a62ebc47a45f2"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -363,9 +363,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.4.9"
+version = "4.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "63361bae7eef3771745f02d8d892bec2fee5f6e34af316ba556e7f97a7069ff1"
+checksum = "a216b506622bb1d316cd51328dce24e07bdff4a6128a47c7e7fad11878d5adbb"
 dependencies = [
  "anstream",
  "anstyle",
@@ -423,9 +423,9 @@ dependencies = [
 
 [[package]]
 name = "core-foundation-sys"
-version = "0.8.4"
+version = "0.8.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e496a50fda8aacccc86d7529e2c1e0892dbd0f898a6b5645b5561b89c3210efa"
+checksum = "06ea2b9bc92be3c2baa9334a323ebca2d6f074ff852cd1d7b11064035cd3868f"
 
 [[package]]
 name = "cpufeatures"
@@ -491,9 +491,9 @@ dependencies = [
 
 [[package]]
 name = "deranged"
-version = "0.3.9"
+version = "0.3.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f32d04922c60427da6f9fef14d042d9edddef64cb9d4ce0d64d0685fbeb1fd3"
+checksum = "8eb30d70a07a3b04884d2677f06bec33509dc67ca60d92949e5535352d3191dc"
 dependencies = [
  "powerfmt",
 ]
@@ -578,14 +578,14 @@ checksum = "9544f10105d33957765016b8a9baea7e689bf1f0f2f32c2fa2f568770c38d2b3"
 
 [[package]]
 name = "filetime"
-version = "0.2.22"
+version = "0.2.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d4029edd3e734da6fe05b6cd7bd2960760a616bd2ddd0d59a0124746d6272af0"
+checksum = "1ee447700ac8aa0b2f2bd7bc4462ad686ba06baa6727ac149a2d6277f0d240fd"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.3.5",
- "windows-sys 0.48.0",
+ "redox_syscall",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -613,10 +613,9 @@ dependencies = [
  "tokio-stream",
  "tower-http",
  "tracing",
- "watchexec 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "watchexec-filterer-globset",
- "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec",
+ "watchexec-events",
+ "watchexec-signals",
 ]
 
 [[package]]
@@ -1225,24 +1224,7 @@ dependencies = [
  "gix-config",
  "ignore",
  "miette",
- "project-origins 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "radix_trie",
- "thiserror",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "ignore-files"
-version = "1.3.2"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "dunce",
- "futures",
- "gix-config",
- "ignore",
- "miette",
- "project-origins 1.2.1 (git+https://github.com/watchexec/watchexec)",
+ "project-origins",
  "radix_trie",
  "thiserror",
  "tokio",
@@ -1322,9 +1304,9 @@ checksum = "89d92a4743f9a61002fae18374ed11e7973f530cb3a3255fb354818118b2203c"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.11"
+version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "969488b55f8ac402214f3f5fd243ebb7206cf82de60d3172994707a4bcc2b829"
+checksum = "c4cd1a83af159aa67994778be9070f0ae1bd732942279cabb14f86f986a21456"
 
 [[package]]
 name = "lock_api"
@@ -1562,7 +1544,7 @@ checksum = "4c42a9226546d68acdd9c0a280d17ce19bfe27a46bf68784e4066115788d008e"
 dependencies = [
  "cfg-if",
  "libc",
- "redox_syscall 0.4.1",
+ "redox_syscall",
  "smallvec",
  "windows-targets 0.48.5",
 ]
@@ -1681,16 +1663,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "project-origins"
-version = "1.2.1"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "futures",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
 name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1713,15 +1685,6 @@ checksum = "c069c179fcdc6a2fe24d8d18305cf085fdbd4f922c041943e203685d6a1c58fd"
 dependencies = [
  "endian-type",
  "nibble_vec",
-]
-
-[[package]]
-name = "redox_syscall"
-version = "0.3.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567664f262709473930a4bf9e51bf2ebf3348f2e748ccc50dea20646858f8f29"
-dependencies = [
- "bitflags 1.3.2",
 ]
 
 [[package]]
@@ -1770,15 +1733,15 @@ checksum = "d626bb9dae77e28219937af045c257c28bfd3f69333c512553507f5f9798cb76"
 
 [[package]]
 name = "rustix"
-version = "0.38.25"
+version = "0.38.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc99bc2d4f1fed22595588a013687477aedf3cdcfb26558c559edb67b4d9b22e"
+checksum = "9470c4bf8246c8daf25f9598dca807fb6510347b1e1cfa55749113850c79d88a"
 dependencies = [
  "bitflags 2.4.1",
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.48.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1960,7 +1923,7 @@ checksum = "7ef1adac450ad7f4b3c28589471ade84f25f731a7a0fe30d71dfa9f60fd808e5"
 dependencies = [
  "cfg-if",
  "fastrand",
- "redox_syscall 0.4.1",
+ "redox_syscall",
  "rustix",
  "windows-sys 0.48.0",
 ]
@@ -2291,44 +2254,19 @@ dependencies = [
  "atomic-take",
  "command-group",
  "futures",
- "ignore-files 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ignore-files",
  "miette",
  "nix",
  "normalize-path",
  "notify",
  "once_cell",
- "project-origins 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "project-origins",
  "thiserror",
  "tokio",
  "tracing",
- "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "watchexec-supervisor 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "watchexec"
-version = "3.0.1"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "async-priority-channel",
- "async-recursion",
- "atomic-take",
- "command-group",
- "futures",
- "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
- "miette",
- "nix",
- "normalize-path",
- "notify",
- "once_cell",
- "project-origins 1.2.1 (git+https://github.com/watchexec/watchexec)",
- "thiserror",
- "tokio",
- "tracing",
- "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
- "watchexec-supervisor 1.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-events",
+ "watchexec-signals",
+ "watchexec-supervisor",
 ]
 
 [[package]]
@@ -2339,44 +2277,7 @@ checksum = "8fa905a7f327bfdda78b9c06831d3180a419b7b722bd1ef779ac13ff2ab69df0"
 dependencies = [
  "nix",
  "notify",
- "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "watchexec-events"
-version = "2.0.1"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "nix",
- "notify",
- "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
-]
-
-[[package]]
-name = "watchexec-filterer-globset"
-version = "2.0.0"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "ignore",
- "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
- "tracing",
- "watchexec 3.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-filterer-ignore",
-]
-
-[[package]]
-name = "watchexec-filterer-ignore"
-version = "2.0.0"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "dunce",
- "ignore",
- "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
- "tracing",
- "watchexec 3.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-signals",
 ]
 
 [[package]]
@@ -2384,16 +2285,6 @@ name = "watchexec-signals"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16f03b5ddd0df60183ceb7f651476893503128152a3b276e57461fdbf5e11114"
-dependencies = [
- "miette",
- "nix",
- "thiserror",
-]
-
-[[package]]
-name = "watchexec-signals"
-version = "2.0.0"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
 dependencies = [
  "miette",
  "nix",
@@ -2411,22 +2302,8 @@ dependencies = [
  "nix",
  "tokio",
  "tracing",
- "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "watchexec-supervisor"
-version = "1.0.1"
-source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
-dependencies = [
- "command-group",
- "futures",
- "nix",
- "tokio",
- "tracing",
- "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
- "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-events",
+ "watchexec-signals",
 ]
 
 [[package]]
@@ -2612,9 +2489,9 @@ checksum = "dff9641d1cd4be8d1a070daf9e3773c5f67e78b4d9d42263020c057706765c04"
 
 [[package]]
 name = "winnow"
-version = "0.5.19"
+version = "0.5.24"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "829846f3e3db426d4cee4510841b71a8e58aa2a76b1132579487ae430ccd9c7b"
+checksum = "0383266b19108dfc6314a56047aa545a1b4d1be60e799b4dbdd407b56402704b"
 dependencies = [
  "memchr",
 ]
