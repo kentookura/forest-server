@@ -24,6 +24,7 @@ tokio-stream = {version = "0.1.14", features = ["sync"]}
 tower-http = {version ="0.5.0", features = ["fs", "trace"]}
 tracing = "0.1.40"
 watchexec = "3.0.0"
+watchexec-filterer-globset = {git = "https://github.com/watchexec/watchexec"}
 watchexec-events = "2.0.1"
 watchexec-signals = "2.0.0"
 

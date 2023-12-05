@@ -72,7 +72,7 @@ impl Watcher {
                             error!("{}", e);
                             exit(1)
                         });
-                        let sout = String::from_utf8(output.stdout).expect("Output not UTF8");
+                        let stdout = String::from_utf8(output.stdout).expect("Output not UTF8");
                         if output.status.success() {
                             info!("Build Succeeded!");
                             match sender.send(sse::Event::default().data("reload")) {
@@ -80,18 +80,18 @@ impl Watcher {
                                     debug!("{:?}", r);
                                     info!("Reloading");
                                 }
-                                Err(_) => {
-                                    error!("Error sending message!");
+                                Err(e) => {
+                                    error!("Error sending message: {}", e);
                                 }
                             };
                         } else {
-                            println!("\n{}", sout);
-                            match sender.send(sse::Event::default().data(sout)) {
+                            println!("\n{}", stdout);
+                            match sender.send(sse::Event::default().data(stdout)) {
                                 Ok(r) => {
                                     debug!("{:?}", r);
                                 }
-                                Err(_) => {
-                                    error!("Error sending message!");
+                                Err(e) => {
+                                    error!("Error sending message: {}", e);
                                 }
                             };
                         }

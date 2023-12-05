@@ -10,16 +10,7 @@ javascript snippet to the root template in `forest.xsl`:
 ```html
 ...
 <script type="module" src="forester.js"></script>
-<script>
-  const evtSource = new EventSource("reload");
-  evtSource.onmessage = (event) => {
-    if (event.data == "reload") {
-      location.reload();
-    } else {
-      console.log(event.data);
-    }
-  };
-</script>
+<script src="reload.js"></script>
 ```
 
 Run `forest watch -- "$args"`, where `$args` are the arguments you want to pass
@@ -45,7 +36,7 @@ To install using Nix:
 
   outputs = inputs@{ self, forester, forest-server, nixpkgs }:
     let
-      system = "x86_64-linux"; # make sure to change this to your use case!
+      system = "x86_64-linux"; # Only works on linux so far, PRs welcome!
       pkgs = import nixpkgs { inherit system inputs; };
     in
     {

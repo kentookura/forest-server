@@ -613,9 +613,10 @@ dependencies = [
  "tokio-stream",
  "tower-http",
  "tracing",
- "watchexec",
- "watchexec-events",
- "watchexec-signals",
+ "watchexec 3.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec-filterer-globset",
+ "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1224,7 +1225,24 @@ dependencies = [
  "gix-config",
  "ignore",
  "miette",
- "project-origins",
+ "project-origins 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "radix_trie",
+ "thiserror",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "ignore-files"
+version = "1.3.2"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "dunce",
+ "futures",
+ "gix-config",
+ "ignore",
+ "miette",
+ "project-origins 1.2.1 (git+https://github.com/watchexec/watchexec)",
  "radix_trie",
  "thiserror",
  "tokio",
@@ -1656,6 +1674,16 @@ name = "project-origins"
 version = "1.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "38bfb24e3550f7fec0f80fd531f41a227d821d637e751cf5e1a2c920cae46089"
+dependencies = [
+ "futures",
+ "tokio",
+ "tokio-stream",
+]
+
+[[package]]
+name = "project-origins"
+version = "1.2.1"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
 dependencies = [
  "futures",
  "tokio",
@@ -2263,19 +2291,44 @@ dependencies = [
  "atomic-take",
  "command-group",
  "futures",
- "ignore-files",
+ "ignore-files 1.3.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "miette",
  "nix",
  "normalize-path",
  "notify",
  "once_cell",
- "project-origins",
+ "project-origins 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror",
  "tokio",
  "tracing",
- "watchexec-events",
- "watchexec-signals",
- "watchexec-supervisor",
+ "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec-supervisor 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "watchexec"
+version = "3.0.1"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "async-priority-channel",
+ "async-recursion",
+ "atomic-take",
+ "command-group",
+ "futures",
+ "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
+ "miette",
+ "nix",
+ "normalize-path",
+ "notify",
+ "once_cell",
+ "project-origins 1.2.1 (git+https://github.com/watchexec/watchexec)",
+ "thiserror",
+ "tokio",
+ "tracing",
+ "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-supervisor 1.0.1 (git+https://github.com/watchexec/watchexec)",
 ]
 
 [[package]]
@@ -2286,7 +2339,44 @@ checksum = "8fa905a7f327bfdda78b9c06831d3180a419b7b722bd1ef779ac13ff2ab69df0"
 dependencies = [
  "nix",
  "notify",
- "watchexec-signals",
+ "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "watchexec-events"
+version = "2.0.1"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "nix",
+ "notify",
+ "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
+]
+
+[[package]]
+name = "watchexec-filterer-globset"
+version = "2.0.0"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "ignore",
+ "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
+ "tracing",
+ "watchexec 3.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-filterer-ignore",
+]
+
+[[package]]
+name = "watchexec-filterer-ignore"
+version = "2.0.0"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "dunce",
+ "ignore",
+ "ignore-files 1.3.2 (git+https://github.com/watchexec/watchexec)",
+ "tracing",
+ "watchexec 3.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
 ]
 
 [[package]]
@@ -2294,6 +2384,16 @@ name = "watchexec-signals"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "16f03b5ddd0df60183ceb7f651476893503128152a3b276e57461fdbf5e11114"
+dependencies = [
+ "miette",
+ "nix",
+ "thiserror",
+]
+
+[[package]]
+name = "watchexec-signals"
+version = "2.0.0"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
 dependencies = [
  "miette",
  "nix",
@@ -2311,8 +2411,22 @@ dependencies = [
  "nix",
  "tokio",
  "tracing",
- "watchexec-events",
- "watchexec-signals",
+ "watchexec-events 2.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "watchexec-signals 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "watchexec-supervisor"
+version = "1.0.1"
+source = "git+https://github.com/watchexec/watchexec#44d794c92151a392467c813eeb255ee48ddf3c68"
+dependencies = [
+ "command-group",
+ "futures",
+ "nix",
+ "tokio",
+ "tracing",
+ "watchexec-events 2.0.1 (git+https://github.com/watchexec/watchexec)",
+ "watchexec-signals 2.0.0 (git+https://github.com/watchexec/watchexec)",
 ]
 
 [[package]]
