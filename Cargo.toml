@@ -1,6 +1,6 @@
 [package]
 name = "forest-server"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 description = "A development server for ocaml-forester"
 license = "MIT"
@@ -8,20 +8,20 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = {version = "0.7.2", features = ["tokio", "macros"]}
-axum-extra = {version = "0.9.0", features = ["typed-header"]}
+axum = { version = "0.7.2", features = ["tokio", "macros"] }
+axum-extra = { version = "0.9.0", features = ["typed-header"] }
 clap = { version = "4.4.11", features = ["derive", "cargo"] }
 cli-log = "2.0.0"
 futures = "0.3"
 futures-util = "0.3.29"
 log = "0.4"
-maud = {version = "0.25.0", features = ["axum"]}
+maud = { version = "0.25.0", features = ["axum"] }
 miette = "5.10.0"
 pretty_env_logger = "0.4"
 shlex = "1.2.0"
 tokio = { version = "1", features = ["sync", "rt-multi-thread"] }
-tokio-stream = {version = "0.1.14", features = ["sync"]}
-tower-http = {version ="0.5.0", features = ["fs", "trace"]}
+tokio-stream = { version = "0.1.14", features = ["sync"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace"] }
 tracing = "0.1.40"
 watchexec = "3.0.1"
 watchexec-events = "2.0.1"

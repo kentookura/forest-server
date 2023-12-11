@@ -24,7 +24,7 @@
       {
         packages.default = pkgs.rustPlatform.buildRustPackage {
           pname = "forest-server";
-          version = "0.2.1";
+          version = "0.2.2";
           src = ./.;
           cargoLock = {
             lockFile = ./Cargo.lock;
@@ -37,8 +37,7 @@
           nativeBuildInputs = [ pkgs.pkg-config ];
           buildInputs = with pkgs;  libraries ++ [
             #packages.${system}.default
-            (rust-bin.nightly.latest.default.override {
-              targets = [ "wasm32-unknown-unknown" ];
+            (rust-bin.stable.latest.default.override {
               extensions = [ "rust-src" "rust-analyzer-preview" "rustfmt" ];
             })
 
