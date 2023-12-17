@@ -50,6 +50,18 @@ To install using Nix:
 }
 ```
 
+## Why Rust?
+
+`forester` is written in ocaml, so why rust?
+[See this discussion](https://lists.sr.ht/~jonsterling/forester-discuss/%3CCADB3NkmpLxEpoTJqv7zNoh5s8+4cTVMJJt7sKR-EwHYc_ULSqw%40mail.gmail.com%3E#%3CCADB3NkkCBB7HKdM=1kzxtJRt9YBwkY_RNHhpzOTo8uuk7crC6A@mail.gmail.com%3E).
+Additionally, I have found compiling ffi code really challenging on nixos
+really challenging.
+
+I am open to deprecating this program if a good ocaml solution is possible.
+However, I suspect that `forest-server` is runnable on windows, so It would be
+nice that when `forester` becomes windows-compatible, the native ocaml file
+watching solution also works.
+
 ### TODO
 
 - Add a nice overlay to the UI like in vite.
