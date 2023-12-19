@@ -4,6 +4,7 @@ pub use server::*;
 use clap::{arg, value_parser, Command};
 use log::{debug, error, info};
 use std::path::PathBuf;
+use std::process::exit;
 use std::sync::Arc;
 extern crate watchexec as wx;
 
@@ -41,13 +42,27 @@ async fn main() -> miette::Result<()> {
     std::env::set_var("RUST_LOG", "info");
     pretty_env_logger::init();
 
+    if which::which("forester").is_err() {
+        error!("Forester is not installed");
+        info!("Please install it with `opam install forester` or `nix shell sourcehut:~jonsterling/ocaml-forester`");
+        exit(1);
+    }
+
     let matches = cli().get_matches();
     match matches.subcommand() {
         Some(("watch", sub_matches)) => {
+            if sub_matches
+                .get_one::<String>("opts")
+                .map(|s| s.as_str()).is_none() 
+            {
+                error!("Make sure to pass arguments to forester like so: forest watch -- \"build --dev --index root trees\"");
+                exit(1)
+            };
+
             let opts = sub_matches
                 .get_one::<String>("opts")
-                .map(|s| s.as_str())
-                .expect("make sure to pass arguments to forester like so: forest watch -- \"build --dev --index root trees/\"");
+                .map(|s| s.as_str()).unwrap();
+
 
             let Some(port) = sub_matches.get_one::<u16>("port") else {
                 todo!()
