@@ -8,27 +8,47 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+minijinja = { version = "1.0.10", features = ["loader"] }
+async-compression = { version = "0.4", features = ["brotli", "tokio"] }
+axum-cc = { git = "https://github.com/robertwayne/axum-cc", branch = "main" }
 axum = { version = "0.7.2", features = ["tokio", "macros"] }
-axum-extra = { version = "0.9.0", features = ["typed-header"] }
+axum-extra = { version = "0.9.0", features = [
+  "typed-header",
+  "cookie",
+  "cookie-private",
+] }
+axum-htmx = { version = "0.5.0", features = ["serde"] }
+bytes = "1.5.0"
 clap = { version = "4.4.11", features = ["derive", "cargo"] }
 cli-log = "2.0.0"
 crossterm = { version = "0.27.0", features = ["event-stream"] }
+fmt = "0.1.0"
 futures = "0.3"
 futures-util = "0.3.29"
 log = "0.4"
 maud = { version = "0.25.0", features = ["axum"] }
 miette = "5.10.0"
+parking_lot = "0.12.1"
 pretty_env_logger = "0.5"
 ratatui = "0.25.0"
+serde = "1.0.193"
+serde_json = "1.0.108"
 shlex = "1.2.0"
 tokio = { version = "1", features = ["sync", "rt-multi-thread"] }
 tokio-stream = { version = "0.1.14", features = ["sync"] }
-tower-http = { version = "0.5.0", features = ["fs", "trace"] }
+tower-http = { version = "0.5.0", features = ["fs", "trace", "cors"] }
 tracing = "0.1.40"
+tracing-appender = "0.2.3"
+tracing-log = "0.2.0"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 watchexec = "3.0.1"
 watchexec-events = "2.0.1"
 watchexec-signals = "2.0.0"
 which = "5.0.0"
+xdg = "2.5.2"
+dotenvy = "0.15.7"
+signal-hook = "0.3.17"
+signal-hook-tokio = { version = "0.3.1", features = ["futures-v0_3"] }
 
 [[bin]]
 name = "forest"

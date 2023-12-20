@@ -10,7 +10,7 @@ javascript snippet to the root template in `forest.xsl`:
 ```html
 ...
 <script type="module" src="forester.js"></script>
-<script src="reload.js"></script>
+<script src="reload.js"></script> <!-- add this>
 ```
 
 Run `forest watch -- "$args"`, where `$args` are the arguments you want to pass

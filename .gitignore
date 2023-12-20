@@ -1,3 +1,9 @@
+build/
+trees/
+templates/
+node_modules/
+latex/
+output/
 examples/
 theme/
 .direnv/
