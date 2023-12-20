@@ -16,51 +16,19 @@ use watchexec_events::{Event, Priority};
 use watchexec_signals::Signal;
 
 pub struct Watcher {
-    pub watchexec: Arc<Watchexec>,
-}
-
-#[derive(Debug)]
-struct MyFilterer;
-
-impl Filterer for MyFilterer {
-    fn check_event(&self, event: &Event, _: Priority) -> Result<bool, RuntimeError> {
-        let evt = event.clone();
-        Ok(evt.tags.clone().into_iter().any(|tag| {
-            if let Path {
-                ref path,
-                file_type: _,
-            } = tag
-            {
-                path.extension().is_some_and(|ext| ext == "tree")
-            } else {
-                false
-            }
-        }))
-    }
-}
-
-fn proper_pathset() -> io::Result<Vec<String>> {
-    let r = fs::read_dir(".")?
-        .map(|res| res.map(|e| e.file_name().to_string_lossy().to_string()))
-        .collect::<Result<Vec<_>, io::Error>>();
-    r.map(|v| {
-        v.into_iter()
-            .filter(|path| {
-                path != ".git"
-                    && path != ".hg"
-                    && path != "node_modules"
-                    && path != "output"
-                    && path != "assets"
-                    && path != "theme"
-            })
-            .collect()
-    })
+    //pub watchexec: Arc<Watchexec>,
+    sender: Sender<sse::Event>,
+    args: Vec<String>,
 }
 
 impl Watcher {
-    pub async fn run(sender: Sender<sse::Event>, forester_args: &str) -> Result<()> {
-        let args = shlex::split(forester_args).expect("failed to parse arguments for forester");
-        let sender = sender.clone();
+    pub fn new(sender: Sender<sse::Event>, args: &str) -> Self {
+        let args = shlex::split(&args).expect("failed to parse arguments for forester");
+        Self { sender, args }
+    }
+    pub async fn run(&self) -> Result<()> {
+        let sender = self.sender.clone();
+        let args = self.args.clone();
 
         let wx = Watchexec::new_async({
             let sender = sender.clone();
@@ -138,4 +106,42 @@ impl Watcher {
         let _result = main.await;
         Ok(())
     }
+}
+
+#[derive(Debug)]
+struct MyFilterer;
+
+impl Filterer for MyFilterer {
+    fn check_event(&self, event: &Event, _: Priority) -> Result<bool, RuntimeError> {
+        let evt = event.clone();
+        Ok(evt.tags.clone().into_iter().any(|tag| {
+            if let Path {
+                ref path,
+                file_type: _,
+            } = tag
+            {
+                path.extension().is_some_and(|ext| ext == "tree")
+            } else {
+                false
+            }
+        }))
+    }
+}
+
+fn proper_pathset() -> io::Result<Vec<String>> {
+    let r = fs::read_dir(".")?
+        .map(|res| res.map(|e| e.file_name().to_string_lossy().to_string()))
+        .collect::<Result<Vec<_>, io::Error>>();
+    r.map(|v| {
+        v.into_iter()
+            .filter(|path| {
+                path != ".git"
+                    && path != ".hg"
+                    && path != "node_modules"
+                    && path != "output"
+                    && path != "assets"
+                    && path != "theme"
+            })
+            .collect()
+    })
 }

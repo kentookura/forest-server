@@ -1,16 +1,30 @@
 pub use app::*;
-pub use server::*;
-
+use axum::response::sse::Event as SseEvent;
 use clap::{arg, value_parser, Command};
 use log::{debug, error, info};
+pub use logging::*;
+pub use logging::{LogCollector, LogMessage};
+use miette::Result;
+use parking_lot::Mutex;
+pub use server::*;
 use std::path::PathBuf;
 use std::process::exit;
 use std::sync::Arc;
+use tokio::sync::broadcast;
+use tracing_appender::non_blocking::WorkerGuard;
+use tracing_log::LogTracer;
+use tracing_subscriber::{prelude::*, EnvFilter, Registry, filter::LevelFilter };
 extern crate watchexec as wx;
 
 mod app;
+mod events;
+mod home;
+mod logging;
+mod root;
 mod server;
+mod ui;
 mod watch;
+mod widgets;
 
 fn cli() -> Command {
     Command::new("forest")
@@ -39,8 +53,7 @@ fn cli() -> Command {
 
 #[tokio::main]
 async fn main() -> miette::Result<()> {
-    std::env::set_var("RUST_LOG", "info");
-    pretty_env_logger::init();
+    let (logs, _guard) = setup_logging()?;
 
     if which::which("forester").is_err() {
         error!("Forester is not installed");
@@ -53,7 +66,8 @@ async fn main() -> miette::Result<()> {
         Some(("watch", sub_matches)) => {
             if sub_matches
                 .get_one::<String>("opts")
-                .map(|s| s.as_str()).is_none() 
+                .map(|s| s.as_str())
+                .is_none()
             {
                 error!("Make sure to pass arguments to forester like so: forest watch -- \"build --dev --index root trees\"");
                 exit(1)
@@ -61,14 +75,15 @@ async fn main() -> miette::Result<()> {
 
             let opts = sub_matches
                 .get_one::<String>("opts")
-                .map(|s| s.as_str()).unwrap();
-
+                .map(|s| s.as_str())
+                .unwrap();
 
             let Some(port) = sub_matches.get_one::<u16>("port") else {
                 todo!()
             };
 
-            let _app = Application::run(*port, opts).await;
+            //let _app = app::run(*port, logs, opts).await;
+            app::run(*port, logs, opts).await;
         }
         Some(("serve", sub_matches)) => {
             let opts = sub_matches.get_one::<String>("opts").map(|s| s.as_str());
@@ -102,7 +117,10 @@ async fn main() -> miette::Result<()> {
                 debug!("{}", stdout);
             }
 
-            let _server = server(*port, None).await;
+            let (tx, rx) = broadcast::channel::<SseEvent>(100);
+            let server = Server::new(*port, rx);
+            server.run().await;
+            //let _server = server::run(*port, None).await;
         }
         Some(("publish", _)) => {
             println!("Not implemented yet.");
@@ -111,4 +129,35 @@ async fn main() -> miette::Result<()> {
         _ => unreachable!(),
     }
     Ok(())
+}
+
+/// Sets up logging to a file and a collector for the logs that can be used to
+/// display them in the UI.
+fn setup_logging() -> Result<(Arc<Mutex<Vec<LogMessage>>>, WorkerGuard)> {
+    // handle logs from the log crate by forwarding them to tracing
+    LogTracer::init();
+
+    // handle logs from the tracing crate
+    let log_folder = xdg::BaseDirectories::with_prefix("forest-server")
+        .expect("failed to get XDG base directories")
+        .get_state_home();
+    let file_appender = tracing_appender::rolling::hourly(log_folder, "forest-server.log");
+    let (non_blocking, guard) = tracing_appender::non_blocking(file_appender);
+
+    let filter = EnvFilter::default()
+        .add_directive("hyper=info".parse().unwrap())
+        .add_directive("debug".parse().unwrap());
+
+    // collect logs in a collector that can be used to display them in the UI
+    let log_collector = LogCollector::default();
+    let logs = log_collector.logs();
+
+    let subscriber = Registry::default()
+        .with(log_collector.with_filter(LevelFilter::INFO));
+
+    
+    tracing::subscriber::set_global_default(subscriber)
+        .expect("setting default subscriber failed");
+
+    Ok((logs, guard))
 }
