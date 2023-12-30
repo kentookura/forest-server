@@ -46,9 +46,9 @@ fn proper_pathset() -> io::Result<Vec<String>> {
     r.map(|v| {
         v.into_iter()
             .filter(|path| {
-                path != ".git"
-                    && path != ".hg"
-                    && path != "node_modules"
+                !path.contains(".git")
+                    && !path.contains(".hg")
+                    && !path.contains("node_modules")
                     && path != "output"
                     && path != "assets"
                     && path != "theme"
