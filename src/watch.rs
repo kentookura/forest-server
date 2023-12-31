@@ -15,6 +15,8 @@ use watchexec_events::Tag::Path;
 use watchexec_events::{Event, Priority};
 use watchexec_signals::Signal;
 
+use notify_rust::Notification;
+
 pub struct Watcher {
     pub watchexec: Arc<Watchexec>,
 }
@@ -106,6 +108,7 @@ impl Watcher {
                                 }
                             };
                         } else {
+                            Notification::new().summary("Build failed!").show().unwrap();
                             println!("\n{}", stdout);
                             match sender.send(sse::Event::default().data(stdout)) {
                                 Ok(r) => {
