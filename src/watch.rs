@@ -49,6 +49,7 @@ fn proper_pathset() -> io::Result<Vec<String>> {
                 !path.contains(".git")
                     && !path.contains(".hg")
                     && !path.contains("node_modules")
+                    && path != ".direnv"
                     && path != "output"
                     && path != "assets"
                     && path != "theme"
