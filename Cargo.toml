@@ -26,7 +26,6 @@ tracing = "0.1.40"
 watchexec = "3.0.1"
 watchexec-events = "2.0.1"
 watchexec-signals = "2.0.0"
-notify-rust = "4"
 
 [[bin]]
 name = "forest"
