@@ -10,12 +10,13 @@
       let
         overlays = [ (import rust-overlay) ];
         pkgs = import nixpkgs { inherit system overlays; };
-
+        frameworks = pkgs.darwin.apple_sdk.frameworks;
         libraries = with pkgs;[
           pkg-config
           bacon
           gdk-pixbuf
           openssl_3
+          (if stdenv.hostPlatform.isDarwin then frameworks.CoreServices else null)
         ];
 
         packages = with pkgs; [
