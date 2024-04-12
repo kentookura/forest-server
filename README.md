@@ -5,7 +5,7 @@ A live-updating development server for [forester](https://git.sr.ht/~jonsterling
 ## Usage
 
 To make use of the live-reload feature, you will need to add the following
-javascript snippet to the root template in `forest.xsl`:
+javascript snippet to the root template in `tree.xsl`:
 
 ```html
 ...
