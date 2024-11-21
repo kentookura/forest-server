@@ -16,7 +16,7 @@ javascript snippet to the root template in `forest.xsl`:
 Run `forest watch -- "$args"`, where `$args` are the arguments you want to pass
 to `forester`. For example:
 
-`forest wach -- "build --dev --root index trees/"`
+`forest watch -- "build --dev --root index trees/"`
 
 ## Installation and Setup
 
